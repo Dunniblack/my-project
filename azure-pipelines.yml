@@ -1,0 +1,7 @@
+trigger:
+ - main
+
+ pool:
+   vmImage: 'windows-latest'
+
+ 
