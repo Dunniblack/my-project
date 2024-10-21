@@ -16,18 +16,6 @@ output "tenant_id" {
   value       = azurerm_key_vault.nist_compliant_kv.tenant_id
 }
 
-# Output private endpoint connection ID (if private endpoint is used)
-output "private_endpoint_id" {
-  description = "The ID of the private endpoint associated with the Key Vault, if network isolation is enabled."
-  value       = length(azurerm_private_endpoint.keyvault_private_endpoint) > 0 ? azurerm_private_endpoint.keyvault_private_endpoint.id : null
-}
-
-# Output private IP address for the Key Vault (if private endpoint is used)
-output "private_endpoint_ip" {
-  description = "The private IP address assigned to the Key Vault through the private endpoint."
-  value       = length(azurerm_private_endpoint.keyvault_private_endpoint.private_service_connection) > 0 ? azurerm_private_endpoint.keyvault_private_endpoint.private_service_connection[0].private_ip_address : null
-}
-
 output "key_vault_key_id" {
   description = "The ID of the Key Vault Key used for disk encryption"
   value       = azurerm_key_vault_key.disk_encryption_key.id
