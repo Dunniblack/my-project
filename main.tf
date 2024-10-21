@@ -20,7 +20,6 @@ module "nist_compliant_keyvault" {
   location                   = var.location
   tenant_id                  = var.tenant_id
   log_analytics_workspace_id = var.log_analytics_workspace_id
-  subnet_id                  = var.subnet_id  # If using a private endpoint
 }
 
 # Call the Disk Encryption Set module
