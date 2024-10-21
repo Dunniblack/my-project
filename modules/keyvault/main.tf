@@ -6,7 +6,7 @@ resource "azurerm_key_vault" "nist_compliant_kv" {
 
   purge_protection_enabled    = true      # NIST 800-53: Protect against accidental deletion
   enable_rbac_authorization   = true      # NIST 800-53: Use RBAC for access control
-  public_network_access_enabled = false   # NIST 800-53: Disable public network access
+  public_network_access_enabled = true  
   location                    = var.location
 }
 
@@ -22,21 +22,6 @@ resource "azurerm_monitor_diagnostic_setting" "diagnostic_settings" {
 
   metric {
     category = "AllMetrics"
-  }
-}
-
-# Optionally, configure private endpoints for network isolation
-resource "azurerm_private_endpoint" "keyvault_private_endpoint" {
-  name                 = "keyvault-private-endpoint"
-  location             = azurerm_key_vault.nist_compliant_kv.location
-  resource_group_name  = azurerm_key_vault.nist_compliant_kv.resource_group_name
-  subnet_id            = var.subnet_id
-
-  private_service_connection {
-    name                           = "keyvault-connection"
-    private_connection_resource_id = azurerm_key_vault.nist_compliant_kv.id
-    is_manual_connection           = false
-    subresource_names              = ["vault"]
   }
 }
 
