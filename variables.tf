@@ -48,11 +48,6 @@ variable "key_vault_name" {
   description = "The name of the Key Vault."
 }
 
-variable "subnet_id" {
-  type        = string
-  description = "The subnet ID used for the private endpoint (optional)."
-}
-
 variable "tags" {
   type        = map(string)
   description = "Tags to associate with resources"
