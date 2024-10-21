@@ -23,8 +23,3 @@ variable "log_analytics_workspace_id" {
   type        = string
   description = "Log Analytics Workspace ID for diagnostics and auditing."
 }
-
-variable "subnet_id" {
-  type        = string
-  description = "The ID of the subnet for the private endpoint."
-}
