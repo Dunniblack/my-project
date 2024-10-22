@@ -23,7 +23,7 @@ module "nist_compliant_keyvault" {
 }
 
 # Call the Disk Encryption Set module
-module "disk_encryption_set" {
+module "DEJOMSIL5DSKES" {
   source                   = "./modules/disk_encryption_set"
   disk_encryption_set_name = var.disk_encryption_set_name
   resource_group_name      = var.resource_group_name
