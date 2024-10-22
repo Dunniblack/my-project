@@ -1,4 +1,4 @@
-resource "azurerm_disk_encryption_set" "DEJOMSIL5DSKES" {
+resource "azurerm_disk_encryption_set" "disk_encryption_set" {
   name                = var.disk_encryption_set_name
   resource_group_name = var.resource_group_name
   location            = var.location
