@@ -5,7 +5,6 @@ resource "azurerm_key_vault" "nist_compliant_kv" {
   sku_name                    = "premium" # Premium SKU for HSM (Hardware Security Modules) and advanced features
 
   purge_protection_enabled    = true      # NIST 800-53: Protect against accidental deletion
-  enable_rbac_authorization   = true      # NIST 800-53: Use RBAC for access control
   public_network_access_enabled = true  
   location                    = var.location
 }
