@@ -1,0 +1,313 @@
+trigger:
+- main
+
+pool:
+  name: AFMC-JOMSMVP  # Your self-hosted agent pool name
+
+variables:
+- group: AFMC-JOMSMVP-KVT # Variable group name from Azure DevOps Library
+- name: 'ARM_CLIENT_ID'
+  value: $(spAppId)
+- name: ARM_CLIENT_SECRET
+  value: $(spAppKey)
+- name: 'ARM_ACCESS_KEY'
+  value: $(container-access-key-1)
+- name: ARM_TENANT_ID
+  value: '0ed52ee3-ab90-4e18-ac02-a60dcc265704'
+- name: 'ARM_SUBSCRIPTION_ID' #Environment variable for subscription_id
+  value: '95adc3aa-c7df-45b9-9b62-bd573a1a7c2e'
+- name: ARM_ENVIRONMENT # Cloud environment variable'
+  value: 'usgovernment'
+- name: 'TF_VAR_storage_account_name'
+  value: 'gvjomsmvpdil5stg'
+- name: 'TF_VAR_container_name'
+  value: 'terraformbackend'
+- name: 'TF_VAR_access_key'
+  value: '$(container-access-key-1)'  # Make sure this is securely stored in the variable group or pipeline
+- name: 'TF_VAR_access_key'
+  value: '$(container-access-key-2)'  # Make sure this is securely stored in the variable group or pipeline
+
+stages:
+  # Stage 1: Install Terraform from Artifactory
+  - stage: Install_Terraform
+    displayName: 'Install Terraform from Artifactory'
+    jobs:
+      - job: Install_Terraform_Job
+        displayName: 'Install Terraform'
+        steps:
+
+        # Step 1: Download Terraform from Artifactory
+          - powershell: |
+              echo "Downloading Terraform binary from Artifactory..."
+              $url = "https://artifact.dev.azure.cce.af.mil:443/artifactory/AFMC-JOMSMVP-DEV/IaC/software/terraform_1.9.5_windows_amd64.zip"
+              $output = "$(Pipeline.Workspace)\terraform.zip"
+              $username = '$(artifactoryUser)'
+              $password = '$(artifactorySecret)'
+              $bytes = [System.Text.Encoding]::ASCII.GetBytes("${username}:${password}")
+              $base64AuthInfo = [Convert]::ToBase64String($bytes)
+              $headers = @{Authorization = "Basic $base64AuthInfo"}
+              try {
+                  Invoke-WebRequest -Uri $url -OutFile $output -Headers $headers
+                  echo "Terraform binary downloaded successfully."
+              } catch {
+                  Write-Error "Failed to download Terraform binary: $_"; exit 1
+              }
+            displayName: 'Download Terraform binary from Artifactory'
+
+        # Step =: Extract Terraform
+          - powershell: |
+              try {
+                  echo "Extracting Terraform binary..."
+                  Expand-Archive -Path "$(Pipeline.Workspace)\terraform.zip" -DestinationPath "$(Pipeline.Workspace)\terraform_extracted" -Force
+                  echo "Terraform binary extracted successfully."
+              } catch {
+                  Write-Error "Failed to extract Terraform binary: $_"; exit 1
+              }
+              $extractionDir = "$(Pipeline.Workspace)\terraform_extracted"
+              $extractedFiles = Get-ChildItem -Path $extractionDir
+              $terraformPath = "$extractionDir\terraform_1.9.5_windows_amd64.exe"
+              if (Test-Path $terraformPath) {
+                  echo "Terraform executable found at: $terraformPath"
+              } else {
+                  Write-Error "Terraform executable not found!"; exit 1
+              }
+            displayName: 'Extract and Verify Terraform binary'
+
+        # Step3: Verify Terraform Installation
+          - powershell: |
+              echo "Verifying Terraform installation..."
+              $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+              if (Test-Path $terraformPath) {
+                  echo "Terraform executable found, checking version..."
+                  & $terraformPath --version
+              } else {
+                  Write-Error "Terraform executable not found!"; exit 1
+              }
+            displayName: 'Verify Terraform version'
+
+        # Step 4: Add Terraform to PATH
+          - powershell: |
+              echo "Adding Terraform to PATH..."
+              echo "##vso[task.setvariable variable=PATH]$(Pipeline.Workspace)\terraform_extracted;$(PATH)"
+            displayName: 'Add Terraform to PATH'
+
+# Stage 2: Install Local Mirror from Artifactory
+  - stage: Install_Local_Mirror
+    displayName: 'Install Local Mirror from Artifactory'
+    dependsOn: Install_Terraform
+    jobs:
+      - job: Install_Local_Mirror_Job
+        displayName: 'Install Local Mirror'
+        steps:
+        # Step 1: Download Local binary from Artifactory using PowerShell
+          - powershell: |
+              echo "Downloading local.zip from Artifactory..."
+              $url = "https://artifact.dev.azure.cce.af.mil:443/artifactory/AFMC-JOMSMVP-DEV/IaC/code/local-provider.zip"
+              $output = "$(Pipeline.Workspace)\local.zip"
+              $username = '$(artifactoryUser)'
+              $password = '$(artifactorySecret)'
+              $bytes = [System.Text.Encoding]::ASCII.GetBytes("${username}:${password}")
+              $base64AuthInfo = [Convert]::ToBase64String($bytes)
+              $headers = @{Authorization = "Basic $base64AuthInfo"}
+              try {
+                  Invoke-WebRequest -Uri $url -OutFile $output -Headers $headers
+                  echo "Terraform binary downloaded successfully."
+              } catch {
+                  Write-Error "Failed to download Terraform binary: $_"; exit 1
+              }
+            displayName: 'Download Terraform binary from Artifactory'
+
+        # Step 2: Install ZIP
+          - powershell: |
+              echo "Installing zip using Chocolatey..."
+              choco install zip -y
+            displayName: 'Install zip'
+
+        # Step 3: Extract the local.zip file
+          - powershell: |
+              try {
+                  echo "Extracting local.zip..."
+                  # Use Expand-Archive to extract .zip file
+                  Expand-Archive -Path "$(Pipeline.Workspace)\local.zip" -DestinationPath "$(Pipeline.Workspace)\local-mirror" -Force
+                  echo "local.zip extracted successfully."
+              } catch {
+                  Write-Error "Failed to extract local.zip: $_"
+                  exit 1
+              }
+
+        # Step 4: Verify the provider directory exists
+          - powershell: |
+              echo "Verifying the provider directory..."
+              $providerPath = "$(Pipeline.Workspace)\local-mirror\registry.terraform.io\hashicorp\"  # Update this path to match the structure
+              if (Test-Path $providerPath) {
+                  echo "Provider directory exists: $providerPath"
+                  
+                  # List files inside the provider directory to ensure files exist
+                  $providerFiles = Get-ChildItem -Path $providerPath
+                  if ($providerFiles.Count -eq 0) {
+                      Write-Error "No files found in the provider directory."
+                      exit 1
+                  } else {
+                      echo "Files in provider directory:"
+                      $providerFiles | ForEach-Object { echo $_.FullName }
+                  }
+              } else {
+                  Write-Error "Provider directory not found: $providerPath"
+                  exit 1
+              }
+            displayName: 'Verify provider directory'
+
+  # Stage 3: Terraform Plan using Local Provider
+  - stage: Terraform_Plan
+    displayName: 'Run Terraform Plan using Local Provider'
+    dependsOn: Install_Local_Mirror
+    jobs:
+      - job: Terraform_Plan_Job
+        displayName: 'Run Terraform Plan'
+        steps:
+          
+        # Step 1: Azure CLI Login
+          - powershell: |
+              echo "Logging into Azure using service principal..."
+              az cloud set --name AzureUSGovernment  # Set the cloud environment to US Gov Cloud
+              az login --service-principal --username $(ARM_CLIENT_ID) --password $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
+              echo "Listing available subscriptions..."
+              az account list --output table
+              echo "Setting the subscription context..."
+              az account set --subscription $(ARM_SUBSCRIPTION_ID)
+              echo "Current account context:"
+              az account show
+            displayName: 'Azure CLI Login and Set Subscription'
+          
+        # Step 2: Verify terraform is installed
+          - powershell: |
+              echo "Verifying Terraform installation..."
+              $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+              if (Test-Path $terraformPath) {
+                  & $terraformPath --version
+              } else {
+                  Write-Error "Terraform executable not found at: $terraformPath"; exit 1
+              }
+            displayName: 'Verify Terraform Installation'
+
+        # Step 3: Initialize terraform
+          - powershell: |
+              echo "Initializing Terraform with local provider and remote backend..."
+              $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+              $providerPath = "$(Pipeline.Workspace)\local-mirror"
+              
+              if (Test-Path $terraformPath) {
+                  & "$terraformPath" init `
+                      -backend-config="storage_account_name=$(TF_VAR_storage_account_name)" `
+                      -backend-config="container_name=$(TF_VAR_container_name)" `
+                      -backend-config="access_key=$(TF_VAR_access_key)" `
+                      -backend-config="key=terraform.tfstate" `
+                      -plugin-dir="$providerPath" -input=false
+                  echo "Terraform initialized successfully with remote backend."
+              } else {
+                  Write-Error "Terraform executable not found at: $terraformPath"; exit 1
+              }
+            displayName: 'Initialize Terraform with remote state backend and local provider'
+
+        # Step 4:  Execute terraform plan
+          - powershell: |
+              echo "Running Terraform plan..."
+              $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+              $workingDirectory = "$(Build.SourcesDirectory)"  # Use Azure DevOps variable for working directory
+
+              if (Test-Path $terraformPath) {
+                  echo "Found Terraform executable at: $terraformPath"
+                  
+                  # Check if the working directory exists
+                  if (Test-Path $workingDirectory) {
+                      Set-Location $workingDirectory  # Change to the working directory
+                      & "$terraformPath" plan -out=tfplan
+                      echo "Terraform plan executed successfully."
+                  } else {
+                      Write-Error "Working directory not found: $workingDirectory"
+                      exit 1
+                  }
+              } else {
+                  Write-Error "Terraform executable not found at: $terraformPath"
+                  exit 1
+              }
+            displayName: 'Run Terraform Plan'
+
+# Stage 4: Terraform Apply using Local Provider
+  - stage: Terraform_Apply
+    displayName: 'Run Terraform Apply using Local Provider'
+    dependsOn: Terraform_Plan
+    jobs:
+      - job: Terraform_Apply_Job
+        displayName: 'Run Terraform Apply'
+        steps:
+        # Step 1: Azure CLI Login
+          - powershell: |
+              echo "Logging into Azure using service principal..."
+              az cloud set --name AzureUSGovernment
+              az login --service-principal --username $(ARM_CLIENT_ID) --password $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
+              az account set --subscription $(ARM_SUBSCRIPTION_ID)
+            displayName: 'Azure CLI Login and Set Subscription'
+            
+        # Step 2: Verify terraform is installed
+          - powershell: |
+              echo "Verifying Terraform installation..."
+              $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+              if (Test-Path $terraformPath) {
+                  & $terraformPath -version
+              } else {
+                  Write-Error "Terraform executable not found at: $terraformPath"
+                  exit 1
+              }
+            displayName: 'Verify Terraform Installation'
+
+        # Step 3: Initialize Terraform
+          - powershell: |
+              echo "Initializing Terraform with local provider and remote backend..."
+              $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+              $providerPath = "$(Pipeline.Workspace)\local-mirror"
+              
+              if (Test-Path $terraformPath) {
+                  & "$terraformPath" init `
+                      -backend-config="storage_account_name=$(TF_VAR_storage_account_name)" `
+                      -backend-config="container_name=$(TF_VAR_container_name)" `
+                      -backend-config="access_key=$(TF_VAR_access_key)" `
+                      -backend-config="key=terraform.tfstate" `
+                      -plugin-dir="$providerPath" -input=false
+                  echo "Terraform initialized successfully with remote backend."
+              } else {
+                  Write-Error "Terraform executable not found at: $terraformPath"; exit 1
+              }
+            displayName: 'Initialize Terraform with remote state backend and local provider'
+
+      # Step 4: Import Existing Key Vault into Terraform State
+          - powershell: |
+              echo "Importing existing Key Vault into Terraform state..."
+              $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+              & "$terraformPath" import module.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT"
+            displayName: 'Import Existing Key Vault'
+
+        # Step 5: Import Existing Diagnostic Settings into Terraform State
+          - powershell: |
+              echo "Importing existing Diagnostic Settings into Terraform state..."
+              $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+              & "$terraformPath" import module.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT|keyvault-diagnostics"
+            displayName: 'Import Existing Diagnostic Settings'
+
+        # Step 6: Execute terraform apply
+          - powershell: |
+              echo "Running Terraform apply..."
+              $workingDirectory = "$(Build.SourcesDirectory)"
+              Set-Location -Path $workingDirectory
+              $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+              
+              # Running terraform apply with the tfvars file
+              & "$terraformPath" apply -var-file="terraform.tfvars" -auto-approve
+            displayName: 'Run Terraform Apply'
+
+        # Step 6: Import Existing Private Endpoint into Terraform State
+          #- powershell: |
+             # echo "Importing existing Private Endpoint into Terraform state..."
+             # $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+             # & "$terraformPath" import module.nist_compliant_keyvault.azurerm_private_endpoint.keyvault_private_endpoint "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.Network/privateEndpoints/keyvault-private-endpoint"
+           # displayName: 'Import Existing Private Endpoint'
