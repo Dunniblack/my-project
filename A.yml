@@ -293,7 +293,11 @@ stages:
               $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
               & "$terraformPath" import module.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT|keyvault-diagnostics"
             displayName: 'Import Existing Diagnostic Settings'
-
+         
+          # grant kv access to disk encryption set
+          - powershell: |
+              az keyvault set-policy -n $keyvaultName --key-permissions get wrapKey unwrapKey --object-id $diskEncryptionSet.identity.principalId
+            displayName: 'Grant kv access to disk encryption set'
         # Step 6: Execute terraform apply
           - powershell: |
               echo "Running Terraform apply..."
