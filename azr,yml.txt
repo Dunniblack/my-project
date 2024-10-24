@@ -1,0 +1,202 @@
+trigger:
+- main
+
+pool:
+  name: AFMC-JOMSMVP  # Your self-hosted agent pool name
+
+variables:
+- group: AFMC-JOMSMVP-KVT # Variable group name from Azure DevOps Library
+- name: 'ARM_CLIENT_ID'
+  value: $(spAppId)
+- name: 'ARM_CLIENT_SECRET'
+  value: $(spAppKey)
+- name: 'ARM_ACCESS_KEY'
+  value: $(container-access-key-1)
+- name: 'ARM_TENANT_ID'
+  value: '0ed52ee3-ab90-4e18-ac02-a60dcc265704'
+- name: 'ARM_SUBSCRIPTION_ID' # Environment variable for subscription_id
+  value: '95adc3aa-c7df-45b9-9b62-bd573a1a7c2e'
+- name: 'ARM_ENVIRONMENT' # Cloud environment variable
+  value: 'usgovernment'
+
+jobs:
+  - job: Terraform_Deployment
+    displayName: 'Terraform Deployment with Local Provider'
+    steps:
+      # Step 1: Download and extract Terraform
+      - powershell: |
+          echo "Downloading Terraform binary from Artifactory..."
+          $url = "https://artifact.dev.azure.cce.af.mil:443/artifactory/AFMC-JOMSMVP-DEV/IaC/software/terraform_1.9.5_windows_amd64.zip"
+          $output = "$(Pipeline.Workspace)\terraform.zip"
+          $username = '$(artifactoryUser)'
+          $password = '$(artifactorySecret)'
+          $bytes = [System.Text.Encoding]::ASCII.GetBytes("${username}:${password}")
+          $base64AuthInfo = [Convert]::ToBase64String($bytes)
+          $headers = @{Authorization = "Basic $base64AuthInfo"}
+          try {
+              Invoke-WebRequest -Uri $url -OutFile $output -Headers $headers
+              echo "Terraform binary downloaded successfully."
+          } catch {
+              Write-Error "Failed to download Terraform binary: $_"; exit 1
+          }
+
+          echo "Extracting Terraform binary..."
+          Expand-Archive -Path "$(Pipeline.Workspace)\terraform.zip" -DestinationPath "$(Pipeline.Workspace)\terraform_extracted" -Force
+          echo "Terraform binary extracted successfully."
+
+          $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+          if (Test-Path $terraformPath) {
+              echo "Terraform executable found at: $terraformPath"
+          } else {
+              Write-Error "Terraform executable not found!"; exit 1
+          }
+        displayName: 'Download and Extract Terraform'
+
+      # Step 2: Add Terraform to PATH
+      - powershell: |
+          echo "Adding Terraform to PATH..."
+          echo "##vso[task.setvariable variable=PATH]$(Pipeline.Workspace)\terraform_extracted;$(PATH)"
+        displayName: 'Add Terraform to PATH'
+
+      # Step 3: Download and extract local provider
+      - powershell: |
+          echo "Downloading local-provider.zip from Artifactory..."
+          $url = "https://artifact.dev.azure.cce.af.mil:443/artifactory/AFMC-JOMSMVP-DEV/IaC/code/local-provider.zip"
+          $output = "$(Pipeline.Workspace)\local-provider.zip"
+          $username = '$(artifactoryUser)'
+          $password = '$(artifactorySecret)'
+          $bytes = [System.Text.Encoding]::ASCII.GetBytes("${username}:${password}")
+          $base64AuthInfo = [Convert]::ToBase64String($bytes)
+          $headers = @{Authorization = "Basic $base64AuthInfo"}
+          try {
+              Invoke-WebRequest -Uri $url -OutFile $output -Headers $headers
+              echo "Local provider downloaded successfully."
+          } catch {
+              Write-Error "Failed to download local provider: $_"; exit 1
+          }
+
+          echo "Installing zip using Chocolatey..."
+          choco install zip -y
+
+          echo "Extracting local-provider.zip..."
+          Expand-Archive -Path "$(Pipeline.Workspace)\local-provider.zip" -DestinationPath "$(Pipeline.Workspace)\local-mirror" -Force
+          echo "Local provider extracted successfully."
+
+          $providerPath = "$(Pipeline.Workspace)\local-mirror"
+          if (Test-Path $providerPath) {
+              echo "Provider directory exists: $providerPath"
+              $providerFiles = Get-ChildItem -Path $providerPath
+              if ($providerFiles.Count -eq 0) {
+                  Write-Error "No files found in the provider directory."; exit 1
+              } else {
+                  echo "Files in provider directory:"
+                  $providerFiles | ForEach-Object { echo $_.FullName }
+              }
+          } else {
+              Write-Error "Provider directory not found: $providerPath"; exit 1
+          }
+        displayName: 'Download and Extract Local Provider'
+
+      # Step 4: Azure CLI login
+      - powershell: |
+          echo "Logging into Azure using service principal..."
+          az cloud set --name AzureUSGovernment  # Set the cloud environment to US Gov Cloud
+          az login --service-principal --username $(ARM_CLIENT_ID) --password $(ARM_CLIENT_SECRET) --tenant $(ARM_TENANT_ID)
+          echo "Setting the subscription context..."
+          az account set --subscription $(ARM_SUBSCRIPTION_ID)
+          echo "Current account context:"
+          az account show
+        displayName: 'Azure CLI Login and Set Subscription'
+
+      # Step 5: Initialize Terraform with Local Provider
+      - powershell: |
+          echo "Initializing Terraform..."
+          $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+          $providerPath = "$(Pipeline.Workspace)\local-mirror"
+          & "$terraformPath" init -plugin-dir="$providerPath" -input=false
+        displayName: 'Initialize Terraform'
+
+      # Step 7: Check and Import/Create Key Vault
+      - task: PowerShell@2
+        displayName: "Check and Import/Create Key Vault and Import Diagnostic Setting"
+        inputs:
+          targetType: 'inline'
+          script: |
+            $terraformPath = "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+            $keyVaultId = "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-AKS-RGP-01/providers/Microsoft.KeyVault/vaults/GVJOMSDIL5KVT"
+            $diagnosticSettingId = "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-AKS-RGP-01/providers/Microsoft.KeyVault/vaults/GVJOMSDIL5KVT|keyvault-diagnostics"
+            $resourceGroupName = "AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-AKS-RGP-01"
+            $vnetId = "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-AKS-RGP-01/providers/Microsoft.Network/virtualNetworks/AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-VNT-01"
+
+            # Check if the Key Vault exists
+            $keyVaultExists = az keyvault show --name "GVJOMSDIL5KVT" --resource-group $resourceGroupName --query "id" -o tsv
+            
+            if ($keyVaultExists) {
+                echo "Key Vault exists. Importing into Terraform state..."
+                & "$terraformPath" import module.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv $keyVaultId
+
+                # Import the existing diagnostic setting into Terraform state
+                & "$terraformPath" import module.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings $diagnosticSettingId
+
+                # Import the existing virtual network into Terraform state
+                & "$terraformPath" import module.nist_compliant_keyvault.azurerm_virtual_network.vnet $vnetId
+            } else {
+                echo "Key Vault does not exist. Creating a new Key Vault..."
+                & "$terraformPath" apply -auto-approve
+            }
+      # Step 8: Check and Import or Create Key Vault Private Endpoint
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: |
+            $resourceName = "keyvault-private-endpoint"
+            $resourceGroup = "AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-AKS-RGP-01"
+            $existingEndpoint = az network private-endpoint list -g $resourceGroup --query "[?name=='$resourceName'].name" -o tsv
+            if (-not $existingEndpoint) {
+              Write-Host "Private endpoint not found. Proceeding to create during apply."
+            } else {
+              Write-Host "Private endpoint found. Importing to Terraform state."
+              terraform import module.nist_compliant_keyvault.azurerm_private_endpoint.keyvault_private_endpoint `
+              /subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/$resourceGroup/providers/Microsoft.Network/privateEndpoints/$resourceName
+            }
+        displayName: 'Check and Import or Create Key Vault Private Endpoint'
+
+      # Step 9: Terraform Plan
+      - powershell: |
+          echo "Running Terraform Plan..."
+          & "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe" plan -out=tfplan -input=false
+        displayName: 'Terraform Plan'
+
+      # Step 10: Terraform Apply
+      - powershell: |
+          echo "Applying Terraform changes..."
+          & "$(Pipeline.Workspace)\terraform_extracted\terraform_1.9.5_windows_amd64.exe" apply -input=false tfplan
+        displayName: 'Terraform Apply'
+
+      # Step 11: Cleanup
+      - powershell: |
+          echo "Cleaning up temporary files..."
+          $workspacePath = "$(Pipeline.Workspace)"
+          # List of items to exclude from deletion
+          $excludedItems = @(
+              "terraform.zip",
+              "local-provider.zip",
+              "terraform_extracted",
+              "local-mirror"  # Ensure no trailing comma here
+              # Add any other items you want to exclude
+          )
+          
+          # Remove all files and folders in the workspace, excluding the specified items
+          Get-ChildItem -Path $workspacePath -Recurse -Force | Where-Object {
+              $excludedItems -notcontains $_.Name -and $excludedItems -notcontains $_.FullName
+          } | ForEach-Object {
+              try {
+                  Remove-Item -Path $_.FullName -Recurse -Force
+                  echo "Removed: $($_.FullName)"
+              } catch {
+                  Write-Host "Warning: Could not remove $($_.FullName) because it is in use."
+              }
+          }
+
+          echo "Cleanup completed."
+        displayName: 'Cleanup Temporary Files'
