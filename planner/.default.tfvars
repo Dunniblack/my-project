@@ -1,0 +1,5 @@
+resource_group_name          = "AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-AKS-RGP-01"
+vnet_name                    = "AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-VNT-01"
+subnet_name                  = "AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-AKS-SNT-01-lhoop"
+core_resource_group_name     = "AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01"
+log_analytics_workspace_name = "AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-OMS-01"
