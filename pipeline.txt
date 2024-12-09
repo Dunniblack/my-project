@@ -1,258 +1,337 @@
-2024-10-21T19:53:20.8115452Z ##[section]Starting: Run Terraform Apply
-2024-10-21T19:53:21.1079052Z ##[section]Starting: Initialize job
-2024-10-21T19:53:21.1082491Z Agent name: 'BST1JOMSMVPDDE'
-2024-10-21T19:53:21.1082875Z Agent machine name: 'BST1JOMSMVPDDE'
-2024-10-21T19:53:21.1083049Z Current agent version: '3.238.0'
-2024-10-21T19:53:21.1105558Z Agent running as: 'BST1JOMSMVPDDE$'
-2024-10-21T19:53:21.1150493Z Prepare build directory.
-2024-10-21T19:53:21.1570556Z Set build variables.
-2024-10-21T19:53:21.1607832Z Download all required tasks.
-2024-10-21T19:53:21.2825915Z Checking job knob settings.
-2024-10-21T19:53:21.2844214Z    Knob: CheckForTaskDeprecation = false Source: $(AZP_AGENT_CHECK_FOR_TASK_DEPRECATION) 
-2024-10-21T19:53:21.2844924Z    Knob: MountWorkspace = false Source: $(AZP_AGENT_MOUNT_WORKSPACE) 
-2024-10-21T19:53:21.2845659Z Finished checking job knob settings.
-2024-10-21T19:53:21.3277741Z Start tracking orphan processes.
-2024-10-21T19:53:21.3348119Z ##[section]Finishing: Initialize job
-2024-10-21T19:53:21.3571995Z ##[section]Async Command Start: DetectDockerContainer
-2024-10-21T19:53:21.3572357Z ##[section]Async Command End: DetectDockerContainer
-2024-10-21T19:53:21.3573188Z ##[section]Async Command Start: DetectDockerContainer
-2024-10-21T19:53:21.3573477Z ##[section]Async Command End: DetectDockerContainer
-2024-10-21T19:53:21.3797152Z ##[section]Starting: Download secrets: DEJOMSMVPDIL5KVT
-2024-10-21T19:53:21.4058283Z ==============================================================================
-2024-10-21T19:53:21.4058936Z Task         : Azure Key Vault
-2024-10-21T19:53:21.4059220Z Description  : Download Azure Key Vault secrets
-2024-10-21T19:53:21.4059359Z Version      : 1.235.0
-2024-10-21T19:53:21.4059625Z Author       : Microsoft Corporation
-2024-10-21T19:53:21.4059894Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/deploy/azure-key-vault
-2024-10-21T19:53:21.4060075Z ==============================================================================
-2024-10-21T19:53:22.1165901Z ##[section]Finishing: Download secrets: DEJOMSMVPDIL5KVT
-2024-10-21T19:53:22.1196396Z ##[section]Starting: Download secrets: DEJOMSMVPDIL5KVT
-2024-10-21T19:53:22.1205300Z ==============================================================================
-2024-10-21T19:53:22.1205536Z Task         : Azure Key Vault
-2024-10-21T19:53:22.1205659Z Description  : Download Azure Key Vault secrets
-2024-10-21T19:53:22.1205803Z Version      : 1.235.0
-2024-10-21T19:53:22.1205924Z Author       : Microsoft Corporation
-2024-10-21T19:53:22.1206065Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/deploy/azure-key-vault
-2024-10-21T19:53:22.1206257Z ==============================================================================
-2024-10-21T19:53:23.6808761Z SubscriptionId: 95adc3aa-c7df-45b9-9b62-bd573a1a7c2e.
-2024-10-21T19:53:23.6810876Z Key vault name: DEJOMSMVPDIL5KVT.
-2024-10-21T19:53:23.6827376Z Downloading secret value for: artifactoryKey.
-2024-10-21T19:53:23.6843621Z Downloading secret value for: artifactorySecret.
-2024-10-21T19:53:23.6845495Z Downloading secret value for: artifactoryUser.
-2024-10-21T19:53:23.6849250Z Downloading secret value for: spAppId.
-2024-10-21T19:53:23.6851335Z Downloading secret value for: spAppKey.
-2024-10-21T19:53:23.6852617Z Downloading secret value for: container-access-key-1.
-2024-10-21T19:53:23.6855294Z Downloading secret value for: container-access-key-2.
-2024-10-21T19:53:24.1744644Z ##[section]Finishing: Download secrets: DEJOMSMVPDIL5KVT
-2024-10-21T19:53:24.1767043Z ##[section]Starting: Checkout IaC-Project@ANR-943 to s
-2024-10-21T19:53:24.1783235Z ==============================================================================
-2024-10-21T19:53:24.1783421Z Task         : Get sources
-2024-10-21T19:53:24.1783507Z Description  : Get sources from a repository. Supports Git, TfsVC, and SVN repositories.
-2024-10-21T19:53:24.1783646Z Version      : 1.0.0
-2024-10-21T19:53:24.1783735Z Author       : Microsoft
-2024-10-21T19:53:24.1784291Z Help         : [More Information](https://go.microsoft.com/fwlink/?LinkId=798199)
-2024-10-21T19:53:24.1785321Z ==============================================================================
-2024-10-21T19:53:24.7178161Z Syncing repository: IaC-Project (Git)
-2024-10-21T19:53:24.7183776Z Prepending Path environment variable with directory containing 'git.exe'.
-2024-10-21T19:53:24.7190480Z ##[command]git version
-2024-10-21T19:53:24.8226396Z git version 2.39.1.windows.1
-2024-10-21T19:53:24.8290923Z ##[command]git lfs version
-2024-10-21T19:53:24.9631229Z git-lfs/3.3.0 (GitHub; windows amd64; go 1.19.3; git 77deabdf)
-2024-10-21T19:53:24.9683674Z ##[command]git config --get remote.origin.url
-2024-10-21T19:53:25.0385720Z ##[command]git clean -ffdx
-2024-10-21T19:53:25.0993562Z Removing .terraform.lock.hcl
-2024-10-21T19:53:25.0995726Z Removing .terraform/modules/
-2024-10-21T19:53:25.0996011Z Removing .terraform/plugin_path
-2024-10-21T19:53:25.1670644Z ##[command]git reset --hard HEAD
-2024-10-21T19:53:27.5024418Z Updating files: 100% (3/3)
-2024-10-21T19:53:27.5036352Z Updating files: 100% (3/3), done.
-2024-10-21T19:53:27.5093972Z HEAD is now at af81177 Updated azure-pipelines.yml
-2024-10-21T19:53:27.5522755Z ##[command]git config gc.auto 0
-2024-10-21T19:53:27.6106047Z ##[command]git config --get-all http.https://tfs.dev.azure.cce.af.mil/DefaultCollection/AFMC-JOMSMVP/_git/IaC-Project.extraheader
-2024-10-21T19:53:27.7112231Z ##[command]git config --get-all http.extraheader
-2024-10-21T19:53:27.7705218Z ##[command]git config --get-regexp .*extraheader
-2024-10-21T19:53:27.8497328Z ##[command]git config --get-all http.proxy
-2024-10-21T19:53:28.0468122Z ##[command]git config http.version HTTP/1.1
-2024-10-21T19:53:28.1254498Z ##[command]git --config-env=http.extraheader=env_var_http.extraheader -c http.sslbackend="schannel" fetch --force --tags --prune --prune-tags --progress --no-recurse-submodules origin
-2024-10-21T19:53:31.6936558Z ##[command]git --config-env=http.extraheader=env_var_http.extraheader -c http.sslbackend="schannel" fetch --force --tags --prune --prune-tags --progress --no-recurse-submodules origin   +af811777c5c780fdb9b19480c15358628d7334da
-2024-10-21T19:53:31.6941729Z From https://tfs.dev.azure.cce.af.mil/DefaultCollection/AFMC-JOMSMVP/_git/IaC-Project
-2024-10-21T19:53:31.6942114Z  * branch            af811777c5c780fdb9b19480c15358628d7334da -> FETCH_HEAD
-2024-10-21T19:53:31.7496132Z ##[command]git checkout --progress --force af811777c5c780fdb9b19480c15358628d7334da
-2024-10-21T19:53:36.2089102Z HEAD is now at af81177 Updated azure-pipelines.yml
-2024-10-21T19:53:36.2285390Z ##[section]Finishing: Checkout IaC-Project@ANR-943 to s
-2024-10-21T19:53:36.2319001Z ##[section]Starting: Azure CLI Login and Set Subscription
-2024-10-21T19:53:36.2328157Z ==============================================================================
-2024-10-21T19:53:36.2328325Z Task         : PowerShell
-2024-10-21T19:53:36.2328473Z Description  : Run a PowerShell script on Linux, macOS, or Windows
-2024-10-21T19:53:36.2328603Z Version      : 2.232.0
-2024-10-21T19:53:36.2328701Z Author       : Microsoft Corporation
-2024-10-21T19:53:36.2328860Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/powershell
-2024-10-21T19:53:36.2329007Z ==============================================================================
-2024-10-21T19:53:37.6919955Z Generating script.
-2024-10-21T19:53:37.7509411Z ========================== Starting Command Output ===========================
-2024-10-21T19:53:37.7633434Z ##[command]"C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\agent\_work\_temp\e72e8bba-1de0-4c52-abe4-2adce339f086.ps1'"
-2024-10-21T19:53:38.2781574Z Logging into Azure using service principal...
-2024-10-21T19:53:41.2371748Z [
-2024-10-21T19:53:41.2371970Z   {
-2024-10-21T19:53:41.2372195Z     "cloudName": "AzureUSGovernment",
-2024-10-21T19:53:41.2372458Z     "homeTenantId": "0ed52ee3-ab90-4e18-ac02-a60dcc265704",
-2024-10-21T19:53:41.2373407Z     "id": "95adc3aa-c7df-45b9-9b62-bd573a1a7c2e",
-2024-10-21T19:53:41.2373629Z     "isDefault": true,
-2024-10-21T19:53:41.2373823Z     "managedByTenants": [],
-2024-10-21T19:53:41.2374054Z     "name": "AZ-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-01",
-2024-10-21T19:53:41.2374270Z     "state": "Enabled",
-2024-10-21T19:53:41.2374486Z     "tenantId": "0ed52ee3-ab90-4e18-ac02-a60dcc265704",
-2024-10-21T19:53:41.2374694Z     "user": {
-2024-10-21T19:53:41.2375384Z       "name": "***",
-2024-10-21T19:53:41.2375582Z       "type": "servicePrincipal"
-2024-10-21T19:53:41.2375754Z     }
-2024-10-21T19:53:41.2375888Z   }
-2024-10-21T19:53:41.2376046Z ]
-2024-10-21T19:53:43.6422753Z ##[section]Finishing: Azure CLI Login and Set Subscription
-2024-10-21T19:53:43.6445253Z ##[section]Starting: Verify Terraform Installation
-2024-10-21T19:53:43.6453598Z ==============================================================================
-2024-10-21T19:53:43.6453749Z Task         : PowerShell
-2024-10-21T19:53:43.6453863Z Description  : Run a PowerShell script on Linux, macOS, or Windows
-2024-10-21T19:53:43.6453982Z Version      : 2.232.0
-2024-10-21T19:53:43.6454060Z Author       : Microsoft Corporation
-2024-10-21T19:53:43.6454169Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/powershell
-2024-10-21T19:53:43.6454305Z ==============================================================================
-2024-10-21T19:53:45.0772804Z Generating script.
-2024-10-21T19:53:45.1267726Z ========================== Starting Command Output ===========================
-2024-10-21T19:53:45.1531719Z ##[command]"C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\agent\_work\_temp\e0631595-e6eb-4fe4-93ce-45d1d33106b7.ps1'"
-2024-10-21T19:53:45.6639139Z Verifying Terraform installation...
-2024-10-21T19:53:45.8439534Z Terraform v1.9.5
-2024-10-21T19:53:45.8440025Z on windows_amd64
-2024-10-21T19:53:45.8440314Z 
-2024-10-21T19:53:45.8440662Z Your version of Terraform is out of date! The latest version
-2024-10-21T19:53:45.8441054Z is 1.9.8. You can update by downloading from https://www.terraform.io/downloads.html
-2024-10-21T19:53:46.1928445Z ##[section]Finishing: Verify Terraform Installation
-2024-10-21T19:53:46.1978135Z ##[section]Starting: Initialize Terraform with remote state backend and local provider
-2024-10-21T19:53:46.1986420Z ==============================================================================
-2024-10-21T19:53:46.1986586Z Task         : PowerShell
-2024-10-21T19:53:46.1986692Z Description  : Run a PowerShell script on Linux, macOS, or Windows
-2024-10-21T19:53:46.1986819Z Version      : 2.232.0
-2024-10-21T19:53:46.1986904Z Author       : Microsoft Corporation
-2024-10-21T19:53:46.1987022Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/powershell
-2024-10-21T19:53:46.1987169Z ==============================================================================
-2024-10-21T19:53:47.9634386Z Generating script.
-2024-10-21T19:53:47.9634823Z ========================== Starting Command Output ===========================
-2024-10-21T19:53:47.9652453Z ##[command]"C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\agent\_work\_temp\40a52800-f3ac-4c34-a7db-4cae5aed6976.ps1'"
-2024-10-21T19:53:48.1854962Z Initializing Terraform with local provider and remote backend...
-2024-10-21T19:53:48.3685679Z [0m[1mInitializing the backend...[0m
-2024-10-21T19:53:48.3751776Z [0m[1mInitializing modules...[0m
-2024-10-21T19:53:48.3756379Z - disk_encryption_set in modules\disk_encryption_set
-2024-10-21T19:53:48.3756897Z - nist_compliant_keyvault in modules\keyvault
-2024-10-21T19:53:48.3771978Z [0m[1mInitializing provider plugins...[0m
-2024-10-21T19:53:48.3773142Z - Finding hashicorp/azurerm versions matching "4.3.0"...
-2024-10-21T19:53:48.3859666Z - Installing hashicorp/azurerm v4.3.0...
-2024-10-21T19:53:52.2628424Z - Installed hashicorp/azurerm v4.3.0 (unauthenticated)
-2024-10-21T19:53:52.2629364Z Terraform has created a lock file [1m.terraform.lock.hcl[0m to record the provider
-2024-10-21T19:53:52.2630301Z selections it made above. Include this file in your version control repository
-2024-10-21T19:53:52.2631097Z so that Terraform can guarantee to make the same selections by default when
-2024-10-21T19:53:52.2632681Z you run "terraform init" in the future.[0m
-2024-10-21T19:53:52.2719481Z 
-2024-10-21T19:53:52.2797866Z [33m╷[0m[0m
-2024-10-21T19:53:52.2798216Z [33m│[0m [0m[1m[33mWarning: [0m[0m[1mMissing backend configuration[0m
-2024-10-21T19:53:52.2798460Z [33m│[0m [0m
-2024-10-21T19:53:52.2798766Z [33m│[0m [0m[0m-backend-config was used without a "backend" block in the configuration.
-2024-10-21T19:53:52.2799024Z [33m│[0m [0m
-2024-10-21T19:53:52.2799326Z [33m│[0m [0mIf you intended to override the default local backend configuration,
-2024-10-21T19:53:52.2799701Z [33m│[0m [0mno action is required, but you may add an explicit backend block to your
-2024-10-21T19:53:52.2800064Z [33m│[0m [0mconfiguration to clear this warning:
-2024-10-21T19:53:52.2800280Z [33m│[0m [0m
-2024-10-21T19:53:52.2800479Z [33m│[0m [0mterraform {
-2024-10-21T19:53:52.2802442Z [33m│[0m [0m  backend "local" {}
-2024-10-21T19:53:52.2802645Z [33m│[0m [0m}
-2024-10-21T19:53:52.2802804Z [33m│[0m [0m
-2024-10-21T19:53:52.2803119Z [33m│[0m [0mHowever, if you intended to override a defined backend, please verify that
-2024-10-21T19:53:52.2803462Z [33m│[0m [0mthe backend configuration is present and valid.
-2024-10-21T19:53:52.2803736Z [33m│[0m [0m
-2024-10-21T19:53:52.2803894Z [33m╵[0m[0m
-2024-10-21T19:53:52.2804076Z [33m╷[0m[0m
-2024-10-21T19:53:52.2804592Z [33m│[0m [0m[1m[33mWarning: [0m[0m[1mIncomplete lock file information for providers[0m
-2024-10-21T19:53:52.2805369Z [33m│[0m [0m
-2024-10-21T19:53:52.2844170Z [33m│[0m [0m[0mDue to your customized provider installation methods, Terraform was forced
-2024-10-21T19:53:52.2844724Z [33m│[0m [0mto calculate lock file checksums locally for the following providers:
-2024-10-21T19:53:52.2845174Z [33m│[0m [0m  - hashicorp/azurerm
-2024-10-21T19:53:52.2845508Z [33m│[0m [0m
-2024-10-21T19:53:52.2851292Z [33m│[0m [0mThe current .terraform.lock.hcl file only includes checksums for
-2024-10-21T19:53:52.2852323Z [33m│[0m [0mwindows_amd64, so Terraform running on another platform will fail to
-2024-10-21T19:53:52.2852737Z [33m│[0m [0minstall these providers.
-2024-10-21T19:53:52.2853270Z [33m│[0m [0m
-2024-10-21T19:53:52.2853676Z [33m│[0m [0mTo calculate additional checksums for another platform, run:
-2024-10-21T19:53:52.2854126Z [33m│[0m [0m  terraform providers lock -platform=linux_amd64
-2024-10-21T19:53:52.2854579Z [33m│[0m [0m(where linux_amd64 is the platform to generate)
-2024-10-21T19:53:52.2854913Z [33m╵[0m[0m
-2024-10-21T19:53:52.2855405Z [0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
-2024-10-21T19:53:52.2856227Z [0m[32m
-2024-10-21T19:53:52.2860664Z You may now begin working with Terraform. Try running "terraform plan" to see
-2024-10-21T19:53:52.2861488Z any changes that are required for your infrastructure. All Terraform commands
-2024-10-21T19:53:52.2862242Z should now work.
-2024-10-21T19:53:52.2866999Z 
-2024-10-21T19:53:52.2867529Z If you ever set or change modules or backend configuration for Terraform,
-2024-10-21T19:53:52.2867963Z rerun this command to reinitialize your working directory. If you forget, other
-2024-10-21T19:53:52.2868380Z commands will detect it and remind you to do so if necessary.[0m
-2024-10-21T19:53:52.2869007Z Terraform initialized successfully with remote backend.
-2024-10-21T19:53:52.6232063Z ##[section]Finishing: Initialize Terraform with remote state backend and local provider
-2024-10-21T19:53:52.6257023Z ##[section]Starting: Import Existing Key Vault
-2024-10-21T19:53:52.6265214Z ==============================================================================
-2024-10-21T19:53:52.6265577Z Task         : PowerShell
-2024-10-21T19:53:52.6265686Z Description  : Run a PowerShell script on Linux, macOS, or Windows
-2024-10-21T19:53:52.6265813Z Version      : 2.232.0
-2024-10-21T19:53:52.6265897Z Author       : Microsoft Corporation
-2024-10-21T19:53:52.6266016Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/powershell
-2024-10-21T19:53:52.6266163Z ==============================================================================
-2024-10-21T19:53:54.0842047Z Generating script.
-2024-10-21T19:53:54.1549975Z ========================== Starting Command Output ===========================
-2024-10-21T19:53:54.1681810Z ##[command]"C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\agent\_work\_temp\4e844d4d-1421-4eeb-a648-731192318663.ps1'"
-2024-10-21T19:53:54.6916217Z Importing existing Key Vault into Terraform state...
-2024-10-21T19:54:07.5641400Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Importing from ID "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT"...[0m
-2024-10-21T19:54:07.5676904Z [0m[1m[32mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Import prepared![0m
-2024-10-21T19:54:07.5692777Z [0m[32m  Prepared azurerm_key_vault for import[0m
-2024-10-21T19:54:07.5693352Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Refreshing state... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT][0m
-2024-10-21T19:54:10.8184535Z [0m[32m
-2024-10-21T19:54:10.8350746Z Import successful!
-2024-10-21T19:54:10.8350998Z 
-2024-10-21T19:54:10.8487043Z The resources that were imported are shown above. These resources are now in
-2024-10-21T19:54:10.8487405Z your Terraform state and will henceforth be managed by Terraform.
-2024-10-21T19:54:10.8487727Z [0m
-2024-10-21T19:54:11.3957140Z ##[section]Finishing: Import Existing Key Vault
-2024-10-21T19:54:11.3999748Z ##[section]Starting: Import Existing Diagnostic Settings
-2024-10-21T19:54:11.4008352Z ==============================================================================
-2024-10-21T19:54:11.4008519Z Task         : PowerShell
-2024-10-21T19:54:11.4008628Z Description  : Run a PowerShell script on Linux, macOS, or Windows
-2024-10-21T19:54:11.4008755Z Version      : 2.232.0
-2024-10-21T19:54:11.4008841Z Author       : Microsoft Corporation
-2024-10-21T19:54:11.4008958Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/powershell
-2024-10-21T19:54:11.4009104Z ==============================================================================
-2024-10-21T19:54:13.3021150Z Generating script.
-2024-10-21T19:54:13.3196380Z ========================== Starting Command Output ===========================
-2024-10-21T19:54:13.3323637Z ##[command]"C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\agent\_work\_temp\add3bb6d-4bb1-4ccb-8afe-acbdfcdf923e.ps1'"
-2024-10-21T19:54:14.1335705Z Importing existing Diagnostic Settings into Terraform state...
-2024-10-21T19:54:28.7674699Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Importing from ID "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT|keyvault-diagnostics"...[0m
-2024-10-21T19:54:28.7675855Z [0m[1m[32mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Import prepared![0m
-2024-10-21T19:54:28.7676481Z [0m[32m  Prepared azurerm_monitor_diagnostic_setting for import[0m
-2024-10-21T19:54:28.7677550Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Refreshing state... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT|keyvault-diagnostics][0m
-2024-10-21T19:54:28.7679846Z [0m[32m
-2024-10-21T19:54:28.7680138Z Import successful!
-2024-10-21T19:54:28.7680302Z 
-2024-10-21T19:54:28.7680715Z The resources that were imported are shown above. These resources are now in
-2024-10-21T19:54:28.7681218Z your Terraform state and will henceforth be managed by Terraform.
-2024-10-21T19:54:28.7681589Z [0m
-2024-10-21T19:54:28.8644751Z ##[section]Finishing: Import Existing Diagnostic Settings
-2024-10-21T19:54:28.8668592Z ##[section]Starting: Checkout IaC-Project@ANR-943 to s
-2024-10-21T19:54:28.8672537Z ==============================================================================
-2024-10-21T19:54:28.8672698Z Task         : Get sources
-2024-10-21T19:54:28.8672806Z Description  : Get sources from a repository. Supports Git, TfsVC, and SVN repositories.
-2024-10-21T19:54:28.8672970Z Version      : 1.0.0
-2024-10-21T19:54:28.8673049Z Author       : Microsoft
-2024-10-21T19:54:28.8673156Z Help         : [More Information](https://go.microsoft.com/fwlink/?LinkId=798199)
-2024-10-21T19:54:28.8673293Z ==============================================================================
-2024-10-21T19:54:29.3000106Z Cleaning any cached credential from repository: IaC-Project (Git)
-2024-10-21T19:54:29.3048447Z ##[section]Finishing: Checkout IaC-Project@ANR-943 to s
-2024-10-21T19:54:29.3182538Z ##[section]Starting: Finalize Job
-2024-10-21T19:54:29.3218644Z Cleaning up task key
-2024-10-21T19:54:29.3220196Z Start cleaning up orphan processes.
-2024-10-21T19:54:29.3871916Z ##[section]Finishing: Finalize Job
-2024-10-21T19:54:29.3956602Z ##[section]Finishing: Run Terraform Apply
+2024-10-22T14:01:21.7426433Z ##[debug]Evaluating condition for step: 'Run Terraform Apply'
+2024-10-22T14:01:21.7427617Z ##[debug]Evaluating: SucceededNode()
+2024-10-22T14:01:21.7427911Z ##[debug]Evaluating SucceededNode:
+2024-10-22T14:01:21.7428439Z ##[debug]=> True
+2024-10-22T14:01:21.7428757Z ##[debug]Result: True
+2024-10-22T14:01:21.7429061Z ##[section]Starting: Run Terraform Apply
+2024-10-22T14:01:21.7436833Z ==============================================================================
+2024-10-22T14:01:21.7437004Z Task         : PowerShell
+2024-10-22T14:01:21.7437104Z Description  : Run a PowerShell script on Linux, macOS, or Windows
+2024-10-22T14:01:21.7437237Z Version      : 2.232.0
+2024-10-22T14:01:21.7437312Z Author       : Microsoft Corporation
+2024-10-22T14:01:21.7437419Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/powershell
+2024-10-22T14:01:21.7437554Z ==============================================================================
+2024-10-22T14:01:22.5834302Z ##[debug]Agent environment resources - Disk: C:\ Available 13464.00 MB out of 129545.00 MB, Memory: Used 3078.00 MB out of 8191.00 MB, CPU: Usage 6.80%
+2024-10-22T14:01:22.8025448Z ##[debug]VstsTaskSdk 0.11.0 commit 7ff27a3e0bdd6f7b06690ae5f5b63cb84d0f23f4
+2024-10-22T14:01:22.9895716Z ##[debug]Loading module from path 'C:\agent\_work\_tasks\PowerShell_e213ff0f-5d5c-4791-802d-52ea3e7be1f1\2.232.0\ps_modules\Sanitizer\Sanitizer.psm1'.
+2024-10-22T14:01:23.0006461Z ##[debug]$OVERRIDING $global:DebugPreference from 'Continue' to 'SilentlyContinue'.
+2024-10-22T14:01:23.0110318Z ##[debug]Loading resource strings from: C:\agent\_work\_tasks\PowerShell_e213ff0f-5d5c-4791-802d-52ea3e7be1f1\2.232.0\ps_modules\Sanitizer/module.json
+2024-10-22T14:01:23.0163437Z ##[debug]Loaded 2 strings.
+2024-10-22T14:01:23.0226318Z ##[debug]SYSTEM_CULTURE: 'en-US'
+2024-10-22T14:01:23.0377135Z ##[debug]Loading resource strings from: C:\agent\_work\_tasks\PowerShell_e213ff0f-5d5c-4791-802d-52ea3e7be1f1\2.232.0\ps_modules\Sanitizer\Strings\resources.resjson\en-US\resources.resjson
+2024-10-22T14:01:23.0379250Z ##[debug]Loaded 2 strings.
+2024-10-22T14:01:23.0769918Z ##[debug]Feature flag AZP_75787_ENABLE_NEW_LOGIC state: False
+2024-10-22T14:01:23.0801304Z ##[debug]Feature flag AZP_75787_ENABLE_NEW_LOGIC_LOG state: False
+2024-10-22T14:01:23.0851442Z ##[debug]Feature flag AZP_75787_ENABLE_COLLECT state: False
+2024-10-22T14:01:23.0884749Z ##[debug]Exporting function 'Get-SanitizerFeatureFlags'.
+2024-10-22T14:01:23.0930464Z ##[debug]Exporting function 'Get-SanitizerCallStatus'.
+2024-10-22T14:01:23.0945663Z ##[debug]Exporting function 'Get-SanitizerActivateStatus'.
+2024-10-22T14:01:23.1017969Z ##[debug]Exporting function 'Protect-ScriptArguments'.
+2024-10-22T14:01:23.1046875Z ##[debug]Importing function 'Get-SanitizerActivateStatus'.
+2024-10-22T14:01:23.1072799Z ##[debug]Importing function 'Get-SanitizerCallStatus'.
+2024-10-22T14:01:23.1102554Z ##[debug]Importing function 'Get-SanitizerFeatureFlags'.
+2024-10-22T14:01:23.1158588Z ##[debug]Importing function 'Protect-ScriptArguments'.
+2024-10-22T14:01:23.1341909Z ##[debug]Entering C:\agent\_work\_tasks\PowerShell_e213ff0f-5d5c-4791-802d-52ea3e7be1f1\2.232.0\powershell.ps1.
+2024-10-22T14:01:23.1456925Z ##[debug]Loading resource strings from: C:\agent\_work\_tasks\PowerShell_e213ff0f-5d5c-4791-802d-52ea3e7be1f1\2.232.0\task.json
+2024-10-22T14:01:23.1810240Z ##[debug]Loaded 14 strings.
+2024-10-22T14:01:23.1855410Z ##[debug]SYSTEM_CULTURE: 'en-US'
+2024-10-22T14:01:23.1895923Z ##[debug]Loading resource strings from: C:\agent\_work\_tasks\PowerShell_e213ff0f-5d5c-4791-802d-52ea3e7be1f1\2.232.0\Strings\resources.resjson\en-US\resources.resjson
+2024-10-22T14:01:23.2264186Z ##[debug]Loaded 14 strings.
+2024-10-22T14:01:23.2584609Z ##[debug]INPUT_ERRORACTIONPREFERENCE: 'stop'
+2024-10-22T14:01:23.2662429Z ##[debug]INPUT_WARNINGPREFERENCE: 'default'
+2024-10-22T14:01:23.2824037Z ##[debug]INPUT_INFORMATIONPREFERENCE: 'default'
+2024-10-22T14:01:23.2827060Z ##[debug]INPUT_VERBOSEPREFERENCE: 'default'
+2024-10-22T14:01:23.2860305Z ##[debug]INPUT_DEBUGPREFERENCE: 'default'
+2024-10-22T14:01:23.2884993Z ##[debug]INPUT_PROGRESSPREFERENCE: 'silentlyContinue'
+2024-10-22T14:01:23.2927289Z ##[debug]INPUT_SHOWWARNINGS: 'false'
+2024-10-22T14:01:23.5003262Z ##[debug] Converted to bool: False
+2024-10-22T14:01:23.5047481Z ##[debug]INPUT_FAILONSTDERR: 'false'
+2024-10-22T14:01:23.5075798Z ##[debug] Converted to bool: False
+2024-10-22T14:01:23.5110074Z ##[debug]INPUT_IGNORELASTEXITCODE: 'false'
+2024-10-22T14:01:23.5136956Z ##[debug] Converted to bool: False
+2024-10-22T14:01:23.5171097Z ##[debug]INPUT_PWSH: 'false'
+2024-10-22T14:01:23.5216524Z ##[debug] Converted to bool: False
+2024-10-22T14:01:23.5252385Z ##[debug]INPUT_WORKINGDIRECTORY: 'C:\agent\_work\13\s'
+2024-10-22T14:01:23.5419286Z ##[debug]Asserting container path exists: 'C:\agent\_work\13\s'
+2024-10-22T14:01:23.5457634Z ##[debug]INPUT_TARGETTYPE: 'inline'
+2024-10-22T14:01:23.5501983Z ##[debug]INPUT_SCRIPT: 'echo "Running Terraform apply..."
+2024-10-22T14:01:23.5518318Z ##[debug]$workingDirectory = "C:\agent\_work\13\s"
+2024-10-22T14:01:23.5536357Z ##[debug]Set-Location -Path $workingDirectory
+2024-10-22T14:01:23.5553165Z ##[debug]$terraformPath = "C:\agent\_work\13\terraform_extracted\terraform_1.9.5_windows_amd64.exe"
+2024-10-22T14:01:23.5571117Z ##[debug]
+2024-10-22T14:01:23.5588272Z ##[debug]# Running terraform apply with the tfvars file
+2024-10-22T14:01:23.5605053Z ##[debug]& "$terraformPath" apply -var-file="terraform.tfvars" -auto-approve'
+2024-10-22T14:01:23.5640456Z ##[debug]INPUT_RUNSCRIPTINSEPARATESCOPE: 'false'
+2024-10-22T14:01:23.5669647Z ##[debug] Converted to bool: False
+2024-10-22T14:01:23.5718229Z Generating script.
+2024-10-22T14:01:23.5898491Z ##[debug]AGENT_VERSION: '3.238.0'
+2024-10-22T14:01:23.5993302Z ##[debug]AGENT_TEMPDIRECTORY: 'C:\agent\_work\_temp'
+2024-10-22T14:01:23.6020747Z ##[debug]Asserting container path exists: 'C:\agent\_work\_temp'
+2024-10-22T14:01:23.6243791Z ##[debug]Asserting leaf path exists: 'C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+2024-10-22T14:01:23.6380299Z ========================== Starting Command Output ===========================
+2024-10-22T14:01:23.6383789Z ##[debug]Entering Invoke-VstsTool.
+2024-10-22T14:01:23.6495219Z ##[debug] Arguments: '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\agent\_work\_temp\348ffbcd-1e4b-467f-be68-e786a8a91e50.ps1'"'
+2024-10-22T14:01:23.6522188Z ##[debug] FileName: 'C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+2024-10-22T14:01:23.6546386Z ##[debug] WorkingDirectory: 'C:\agent\_work\13\s'
+2024-10-22T14:01:23.6607915Z ##[command]"C:\windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\agent\_work\_temp\348ffbcd-1e4b-467f-be68-e786a8a91e50.ps1'"
+2024-10-22T14:01:24.1670757Z Running Terraform apply...
+2024-10-22T14:01:27.8816871Z ##[debug]Agent environment resources - Disk: C:\ Available 13464.00 MB out of 129545.00 MB, Memory: Used 3385.00 MB out of 8191.00 MB, CPU: Usage 6.30%
+2024-10-22T14:01:33.0992777Z ##[debug]Agent environment resources - Disk: C:\ Available 13464.00 MB out of 129545.00 MB, Memory: Used 3370.00 MB out of 8191.00 MB, CPU: Usage 5.89%
+2024-10-22T14:01:34.8738152Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Refreshing state... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT][0m
+2024-10-22T14:01:36.9510108Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Refreshing state... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT|keyvault-diagnostics][0m
+2024-10-22T14:01:37.1813384Z 
+2024-10-22T14:01:37.1814223Z Terraform used the selected providers to generate the following execution
+2024-10-22T14:01:37.1822589Z plan. Resource actions are indicated with the following symbols:
+2024-10-22T14:01:37.1822868Z   [32m+[0m create[0m
+2024-10-22T14:01:37.1823108Z [31m-[0m/[32m+[0m destroy and then create replacement[0m
+2024-10-22T14:01:37.1823226Z 
+2024-10-22T14:01:37.1823427Z Terraform will perform the following actions:
+2024-10-22T14:01:37.1823533Z 
+2024-10-22T14:01:37.1823790Z [1m  # module.disk_encryption_set.azurerm_disk_encryption_set.disk_encryption_set[0m will be created
+2024-10-22T14:01:37.1824132Z [0m  [32m+[0m[0m resource "azurerm_disk_encryption_set" "disk_encryption_set" {
+2024-10-22T14:01:37.1824439Z       [32m+[0m[0m auto_key_rotation_enabled = false
+2024-10-22T14:01:37.1824698Z       [32m+[0m[0m encryption_type           = "EncryptionAtRestWithCustomerKey"
+2024-10-22T14:01:37.1824967Z       [32m+[0m[0m id                        = (known after apply)
+2024-10-22T14:01:37.1825218Z       [32m+[0m[0m key_vault_key_id          = (known after apply)
+2024-10-22T14:01:37.1825487Z       [32m+[0m[0m key_vault_key_url         = (known after apply)
+2024-10-22T14:01:37.1825730Z       [32m+[0m[0m location                  = "usdodeast"
+2024-10-22T14:01:37.1825947Z       [32m+[0m[0m name                      = "DEJOMSIL5DSKES"
+2024-10-22T14:01:37.1826232Z       [32m+[0m[0m resource_group_name       = "AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01"
+2024-10-22T14:01:37.1826401Z 
+2024-10-22T14:01:37.1826551Z       [32m+[0m[0m identity {
+2024-10-22T14:01:37.1826777Z           [32m+[0m[0m principal_id = (known after apply)
+2024-10-22T14:01:37.1827239Z           [32m+[0m[0m tenant_id    = (known after apply)
+2024-10-22T14:01:37.1827474Z           [32m+[0m[0m type         = "SystemAssigned"
+2024-10-22T14:01:37.1827646Z         }
+2024-10-22T14:01:37.1827862Z     }
+2024-10-22T14:01:37.1827937Z 
+2024-10-22T14:01:37.1828172Z [1m  # module.disk_encryption_set.azurerm_role_assignment.DEJOMIL5DSKESKVCU[0m will be created
+2024-10-22T14:01:37.1828497Z [0m  [32m+[0m[0m resource "azurerm_role_assignment" "DEJOMIL5DSKESKVCU" {
+2024-10-22T14:01:37.1828777Z       [32m+[0m[0m id                               = (known after apply)
+2024-10-22T14:01:37.1829020Z       [32m+[0m[0m name                             = (known after apply)
+2024-10-22T14:01:37.1829272Z       [32m+[0m[0m principal_id                     = (known after apply)
+2024-10-22T14:01:37.1829513Z       [32m+[0m[0m principal_type                   = (known after apply)
+2024-10-22T14:01:37.1829776Z       [32m+[0m[0m role_definition_id               = (known after apply)
+2024-10-22T14:01:37.1830072Z       [32m+[0m[0m role_definition_name             = "Key Vault Crypto Service Encryption User"
+2024-10-22T14:01:37.1830351Z       [32m+[0m[0m scope                            = (known after apply)
+2024-10-22T14:01:37.1830616Z       [32m+[0m[0m skip_service_principal_aad_check = (known after apply)
+2024-10-22T14:01:37.1830815Z     }
+2024-10-22T14:01:37.1830890Z 
+2024-10-22T14:01:37.1831136Z [1m  # module.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv[0m must be [1m[31mreplaced[0m
+2024-10-22T14:01:37.1831470Z [0m[31m-[0m/[32m+[0m[0m resource "azurerm_key_vault" "nist_compliant_kv" {
+2024-10-22T14:01:37.1831759Z       [33m~[0m[0m access_policy                   = [] -> (known after apply)
+2024-10-22T14:01:37.1832034Z       [31m-[0m[0m enabled_for_deployment          = false [90m-> null[0m[0m
+2024-10-22T14:01:37.1832317Z       [31m-[0m[0m enabled_for_disk_encryption     = false [90m-> null[0m[0m
+2024-10-22T14:01:37.1832595Z       [31m-[0m[0m enabled_for_template_deployment = false [90m-> null[0m[0m
+2024-10-22T14:01:37.1833180Z       [33m~[0m[0m id                              = "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT" -> (known after apply)
+2024-10-22T14:01:37.1833791Z       [33m~[0m[0m name                            = "DEJOMSIL5KVT" [33m->[0m[0m "disk-encryption-kvt" [31m# forces replacement[0m[0m
+2024-10-22T14:01:37.1834202Z       [33m~[0m[0m public_network_access_enabled   = false [33m->[0m[0m true
+2024-10-22T14:01:37.1834452Z       [31m-[0m[0m tags                            = {} [90m-> null[0m[0m
+2024-10-22T14:01:37.1834729Z       [33m~[0m[0m vault_uri                       = "https://dejomsil5kvt.vault.usgovcloudapi.net/" -> (known after apply)
+2024-10-22T14:01:37.1835007Z         [90m# (7 unchanged attributes hidden)[0m[0m
+2024-10-22T14:01:37.1835105Z 
+2024-10-22T14:01:37.1835261Z       [33m~[0m[0m contact {
+2024-10-22T14:01:37.1835459Z           [32m+[0m[0m access_policy                   = (known after apply)
+2024-10-22T14:01:37.1835709Z           [32m+[0m[0m enable_rbac_authorization       = (known after apply)
+2024-10-22T14:01:37.1835967Z           [32m+[0m[0m enabled_for_deployment          = (known after apply)
+2024-10-22T14:01:37.1836397Z           [32m+[0m[0m enabled_for_disk_encryption     = (known after apply)
+2024-10-22T14:01:37.1836686Z           [32m+[0m[0m enabled_for_template_deployment = (known after apply)
+2024-10-22T14:01:37.1836935Z           [32m+[0m[0m id                              = (known after apply)
+2024-10-22T14:01:37.1837178Z           [32m+[0m[0m location                        = (known after apply)
+2024-10-22T14:01:37.1837416Z           [32m+[0m[0m name                            = (known after apply)
+2024-10-22T14:01:37.1837675Z           [32m+[0m[0m public_network_access_enabled   = (known after apply)
+2024-10-22T14:01:37.1838084Z           [32m+[0m[0m purge_protection_enabled        = (known after apply)
+2024-10-22T14:01:37.1838338Z           [32m+[0m[0m resource_group_name             = (known after apply)
+2024-10-22T14:01:37.1838595Z           [32m+[0m[0m sku_name                        = (known after apply)
+2024-10-22T14:01:37.1838858Z           [32m+[0m[0m soft_delete_retention_days      = (known after apply)
+2024-10-22T14:01:37.1839117Z           [32m+[0m[0m tags                            = (known after apply)
+2024-10-22T14:01:37.1839360Z           [32m+[0m[0m tenant_id                       = (known after apply)
+2024-10-22T14:01:37.1839604Z           [32m+[0m[0m vault_uri                       = (known after apply)
+2024-10-22T14:01:37.1839804Z         } -> (known after apply)
+2024-10-22T14:01:37.1839901Z 
+2024-10-22T14:01:37.1840058Z       [33m~[0m[0m network_acls {
+2024-10-22T14:01:37.1840291Z           [32m+[0m[0m access_policy                   = (known after apply)
+2024-10-22T14:01:37.1840559Z           [32m+[0m[0m enable_rbac_authorization       = (known after apply)
+2024-10-22T14:01:37.1840830Z           [32m+[0m[0m enabled_for_deployment          = (known after apply)
+2024-10-22T14:01:37.1841105Z           [32m+[0m[0m enabled_for_disk_encryption     = (known after apply)
+2024-10-22T14:01:37.1841372Z           [32m+[0m[0m enabled_for_template_deployment = (known after apply)
+2024-10-22T14:01:37.1841634Z           [32m+[0m[0m id                              = (known after apply)
+2024-10-22T14:01:37.1841875Z           [32m+[0m[0m location                        = (known after apply)
+2024-10-22T14:01:37.1842113Z           [32m+[0m[0m name                            = (known after apply)
+2024-10-22T14:01:37.1842370Z           [32m+[0m[0m public_network_access_enabled   = (known after apply)
+2024-10-22T14:01:37.1842630Z           [32m+[0m[0m purge_protection_enabled        = (known after apply)
+2024-10-22T14:01:37.1842899Z           [32m+[0m[0m resource_group_name             = (known after apply)
+2024-10-22T14:01:37.1843151Z           [32m+[0m[0m sku_name                        = (known after apply)
+2024-10-22T14:01:37.1843408Z           [32m+[0m[0m soft_delete_retention_days      = (known after apply)
+2024-10-22T14:01:37.1843665Z           [32m+[0m[0m tags                            = (known after apply)
+2024-10-22T14:01:37.1843971Z           [32m+[0m[0m tenant_id                       = (known after apply)
+2024-10-22T14:01:37.1844201Z           [32m+[0m[0m vault_uri                       = (known after apply)
+2024-10-22T14:01:37.1844416Z         } -> (known after apply)
+2024-10-22T14:01:37.1844586Z     }
+2024-10-22T14:01:37.1844721Z 
+2024-10-22T14:01:37.1845384Z [1m  # module.nist_compliant_keyvault.azurerm_key_vault_key.disk_encryption_key[0m will be created
+2024-10-22T14:01:37.1928537Z [0m  [32m+[0m[0m resource "azurerm_key_vault_key" "disk_encryption_key" {
+2024-10-22T14:01:37.1928870Z       [32m+[0m[0m curve                   = (known after apply)
+2024-10-22T14:01:37.1929119Z       [32m+[0m[0m e                       = (known after apply)
+2024-10-22T14:01:37.1929355Z       [32m+[0m[0m id                      = (known after apply)
+2024-10-22T14:01:37.1929558Z       [32m+[0m[0m key_opts                = [
+2024-10-22T14:01:37.1929759Z           [32m+[0m[0m "decrypt",
+2024-10-22T14:01:37.1929965Z           [32m+[0m[0m "encrypt",
+2024-10-22T14:01:37.1930155Z           [32m+[0m[0m "sign",
+2024-10-22T14:01:37.1930353Z           [32m+[0m[0m "unwrapKey",
+2024-10-22T14:01:37.1930530Z           [32m+[0m[0m "verify",
+2024-10-22T14:01:37.1930721Z           [32m+[0m[0m "wrapKey",
+2024-10-22T14:01:37.1930889Z         ]
+2024-10-22T14:01:37.1931077Z       [32m+[0m[0m key_size                = 2048
+2024-10-22T14:01:37.1931387Z       [32m+[0m[0m key_type                = "RSA"
+2024-10-22T14:01:37.1931603Z       [32m+[0m[0m key_vault_id            = (known after apply)
+2024-10-22T14:01:37.1932045Z       [32m+[0m[0m n                       = (known after apply)
+2024-10-22T14:01:37.1932263Z       [32m+[0m[0m name                    = "disk-encryption-key"
+2024-10-22T14:01:37.1932498Z       [32m+[0m[0m public_key_openssh      = (known after apply)
+2024-10-22T14:01:37.1932721Z       [32m+[0m[0m public_key_pem          = (known after apply)
+2024-10-22T14:01:37.1932957Z       [32m+[0m[0m resource_id             = (known after apply)
+2024-10-22T14:01:37.1933200Z       [32m+[0m[0m resource_versionless_id = (known after apply)
+2024-10-22T14:01:37.1933439Z       [32m+[0m[0m version                 = (known after apply)
+2024-10-22T14:01:37.1933666Z       [32m+[0m[0m versionless_id          = (known after apply)
+2024-10-22T14:01:37.1933876Z       [32m+[0m[0m x                       = (known after apply)
+2024-10-22T14:01:37.1934085Z       [32m+[0m[0m y                       = (known after apply)
+2024-10-22T14:01:37.1934260Z     }
+2024-10-22T14:01:37.1934317Z 
+2024-10-22T14:01:37.1934585Z [1m  # module.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings[0m must be [1m[31mreplaced[0m
+2024-10-22T14:01:37.1934942Z [0m[31m-[0m/[32m+[0m[0m resource "azurerm_monitor_diagnostic_setting" "diagnostic_settings" {
+2024-10-22T14:01:37.1935417Z       [33m~[0m[0m id                             = "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT|keyvault-diagnostics" -> (known after apply)
+2024-10-22T14:01:37.1935976Z       [32m+[0m[0m log_analytics_destination_type = (known after apply)
+2024-10-22T14:01:37.1936216Z         name                           = "keyvault-diagnostics"
+2024-10-22T14:01:37.1936664Z       [33m~[0m[0m target_resource_id             = "/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT" [31m# forces replacement[0m[0m -> (known after apply) [31m# forces replacement[0m[0m
+2024-10-22T14:01:37.1937126Z         [90m# (3 unchanged attributes hidden)[0m[0m
+2024-10-22T14:01:37.1937238Z 
+2024-10-22T14:01:37.1937398Z       [31m-[0m[0m enabled_log {
+2024-10-22T14:01:37.1937600Z           [31m-[0m[0m category       = "AuditEvent" [90m-> null[0m[0m
+2024-10-22T14:01:37.1938702Z             [90m# (1 unchanged attribute hidden)[0m[0m
+2024-10-22T14:01:37.1939061Z 
+2024-10-22T14:01:37.1939234Z           [31m-[0m[0m retention_policy {
+2024-10-22T14:01:37.1939444Z               [31m-[0m[0m days    = 0 [90m-> null[0m[0m
+2024-10-22T14:01:37.1939653Z               [31m-[0m[0m enabled = false [90m-> null[0m[0m
+2024-10-22T14:01:37.1939834Z             }
+2024-10-22T14:01:37.1939976Z         }
+2024-10-22T14:01:37.1940139Z       [32m+[0m[0m enabled_log {
+2024-10-22T14:01:37.1940327Z           [32m+[0m[0m category       = "AuditEvent"
+2024-10-22T14:01:37.1940549Z             [90m# (1 unchanged attribute hidden)[0m[0m
+2024-10-22T14:01:37.1940728Z         }
+2024-10-22T14:01:37.1940784Z 
+2024-10-22T14:01:37.1940936Z       [31m-[0m[0m metric {
+2024-10-22T14:01:37.1941148Z           [31m-[0m[0m category = "AllMetrics" [90m-> null[0m[0m
+2024-10-22T14:01:37.1941379Z           [31m-[0m[0m enabled  = true [90m-> null[0m[0m
+2024-10-22T14:01:37.1941479Z 
+2024-10-22T14:01:37.1941644Z           [31m-[0m[0m retention_policy {
+2024-10-22T14:01:37.1941838Z               [31m-[0m[0m days    = 0 [90m-> null[0m[0m
+2024-10-22T14:01:37.1942061Z               [31m-[0m[0m enabled = false [90m-> null[0m[0m
+2024-10-22T14:01:37.1942243Z             }
+2024-10-22T14:01:37.1942382Z         }
+2024-10-22T14:01:37.1942537Z       [32m+[0m[0m metric {
+2024-10-22T14:01:37.1942717Z           [32m+[0m[0m category = "AllMetrics"
+2024-10-22T14:01:37.1942917Z           [32m+[0m[0m enabled  = true
+2024-10-22T14:01:37.1943162Z         }
+2024-10-22T14:01:37.1943299Z     }
+2024-10-22T14:01:37.1943355Z 
+2024-10-22T14:01:37.1943537Z [1mPlan:[0m 5 to add, 0 to change, 2 to destroy.
+2024-10-22T14:01:37.1943715Z [0m
+2024-10-22T14:01:37.1943858Z Changes to Outputs:
+2024-10-22T14:01:37.1944075Z   [32m+[0m[0m disk_encryption_set_id       = (known after apply)
+2024-10-22T14:01:37.1944316Z   [32m+[0m[0m disk_encryption_set_identity = {
+2024-10-22T14:01:37.1944541Z       [32m+[0m[0m identity_ids = [90mnull[0m[0m
+2024-10-22T14:01:37.1944754Z       [32m+[0m[0m principal_id = (known after apply)
+2024-10-22T14:01:37.1944986Z       [32m+[0m[0m tenant_id    = (known after apply)
+2024-10-22T14:01:37.1945200Z       [32m+[0m[0m type         = "SystemAssigned"
+2024-10-22T14:01:37.1945365Z     }
+2024-10-22T14:01:38.1665338Z ##[debug]Agent environment resources - Disk: C:\ Available 13463.00 MB out of 129545.00 MB, Memory: Used 3379.00 MB out of 8191.00 MB, CPU: Usage 5.56%
+2024-10-22T14:01:43.2285480Z ##[debug]Agent environment resources - Disk: C:\ Available 13467.00 MB out of 129545.00 MB, Memory: Used 3394.00 MB out of 8191.00 MB, CPU: Usage 5.24%
+2024-10-22T14:01:45.9526747Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Destroying... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT|keyvault-diagnostics][0m[0m
+2024-10-22T14:01:48.2812218Z ##[debug]Agent environment resources - Disk: C:\ Available 13467.00 MB out of 129545.00 MB, Memory: Used 3383.00 MB out of 8191.00 MB, CPU: Usage 4.95%
+2024-10-22T14:01:53.3439384Z ##[debug]Agent environment resources - Disk: C:\ Available 13467.00 MB out of 129545.00 MB, Memory: Used 3382.00 MB out of 8191.00 MB, CPU: Usage 4.69%
+2024-10-22T14:01:55.9529929Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Still destroying... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-...ults/DEJOMSIL5KVT|keyvault-diagnostics, 10s elapsed][0m[0m
+2024-10-22T14:01:58.4034078Z ##[debug]Agent environment resources - Disk: C:\ Available 13467.00 MB out of 129545.00 MB, Memory: Used 3381.00 MB out of 8191.00 MB, CPU: Usage 4.47%
+2024-10-22T14:02:03.4586448Z ##[debug]Agent environment resources - Disk: C:\ Available 13467.00 MB out of 129545.00 MB, Memory: Used 3381.00 MB out of 8191.00 MB, CPU: Usage 4.26%
+2024-10-22T14:02:05.9668847Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Still destroying... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-...ults/DEJOMSIL5KVT|keyvault-diagnostics, 20s elapsed][0m[0m
+2024-10-22T14:02:08.5121850Z ##[debug]Agent environment resources - Disk: C:\ Available 13467.00 MB out of 129545.00 MB, Memory: Used 3380.00 MB out of 8191.00 MB, CPU: Usage 4.07%
+2024-10-22T14:02:13.5657858Z ##[debug]Agent environment resources - Disk: C:\ Available 13467.00 MB out of 129545.00 MB, Memory: Used 3381.00 MB out of 8191.00 MB, CPU: Usage 3.89%
+2024-10-22T14:02:15.9702489Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Still destroying... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-...ults/DEJOMSIL5KVT|keyvault-diagnostics, 30s elapsed][0m[0m
+2024-10-22T14:02:18.6129033Z ##[debug]Agent environment resources - Disk: C:\ Available 13467.00 MB out of 129545.00 MB, Memory: Used 3381.00 MB out of 8191.00 MB, CPU: Usage 3.73%
+2024-10-22T14:02:23.6633183Z ##[debug]Agent environment resources - Disk: C:\ Available 13459.00 MB out of 129545.00 MB, Memory: Used 3360.00 MB out of 8191.00 MB, CPU: Usage 3.59%
+2024-10-22T14:02:25.9749221Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Still destroying... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-...ults/DEJOMSIL5KVT|keyvault-diagnostics, 40s elapsed][0m[0m
+2024-10-22T14:02:28.7153347Z ##[debug]Agent environment resources - Disk: C:\ Available 13459.00 MB out of 129545.00 MB, Memory: Used 3360.00 MB out of 8191.00 MB, CPU: Usage 3.45%
+2024-10-22T14:02:33.7722803Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3360.00 MB out of 8191.00 MB, CPU: Usage 3.32%
+2024-10-22T14:02:35.9833091Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Still destroying... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-...ults/DEJOMSIL5KVT|keyvault-diagnostics, 50s elapsed][0m[0m
+2024-10-22T14:02:36.9996038Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Destruction complete after 51s[0m
+2024-10-22T14:02:37.0107437Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Destroying... [id=/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/DEJOMSIL5KVT][0m[0m
+2024-10-22T14:02:37.9475390Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Destruction complete after 1s[0m
+2024-10-22T14:02:37.9571782Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Creating...[0m[0m
+2024-10-22T14:02:38.8353959Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3362.00 MB out of 8191.00 MB, CPU: Usage 3.21%
+2024-10-22T14:02:43.8976998Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3361.00 MB out of 8191.00 MB, CPU: Usage 3.10%
+2024-10-22T14:02:47.9584397Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [10s elapsed][0m[0m
+2024-10-22T14:02:48.9701489Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3368.00 MB out of 8191.00 MB, CPU: Usage 3.00%
+2024-10-22T14:02:54.0186612Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3369.00 MB out of 8191.00 MB, CPU: Usage 2.91%
+2024-10-22T14:02:57.9610573Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [20s elapsed][0m[0m
+2024-10-22T14:02:59.0739043Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3369.00 MB out of 8191.00 MB, CPU: Usage 2.82%
+2024-10-22T14:03:04.1328585Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3369.00 MB out of 8191.00 MB, CPU: Usage 2.74%
+2024-10-22T14:03:07.9631180Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [30s elapsed][0m[0m
+2024-10-22T14:03:09.1847743Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3369.00 MB out of 8191.00 MB, CPU: Usage 2.66%
+2024-10-22T14:03:14.2396020Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3369.00 MB out of 8191.00 MB, CPU: Usage 2.58%
+2024-10-22T14:03:17.9722577Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [40s elapsed][0m[0m
+2024-10-22T14:03:19.3019372Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3369.00 MB out of 8191.00 MB, CPU: Usage 2.51%
+2024-10-22T14:03:24.3669107Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3361.00 MB out of 8191.00 MB, CPU: Usage 2.45%
+2024-10-22T14:03:27.9816653Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [50s elapsed][0m[0m
+2024-10-22T14:03:29.4198490Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3361.00 MB out of 8191.00 MB, CPU: Usage 2.39%
+2024-10-22T14:03:34.7488634Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3362.00 MB out of 8191.00 MB, CPU: Usage 2.32%
+2024-10-22T14:03:37.9853196Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [1m0s elapsed][0m[0m
+2024-10-22T14:03:39.8060053Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3361.00 MB out of 8191.00 MB, CPU: Usage 2.27%
+2024-10-22T14:03:44.8834184Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3347.00 MB out of 8191.00 MB, CPU: Usage 2.21%
+2024-10-22T14:03:47.9973846Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [1m10s elapsed][0m[0m
+2024-10-22T14:03:49.9547025Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3347.00 MB out of 8191.00 MB, CPU: Usage 2.16%
+2024-10-22T14:03:55.0103760Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3334.00 MB out of 8191.00 MB, CPU: Usage 2.11%
+2024-10-22T14:03:58.0043147Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [1m20s elapsed][0m[0m
+2024-10-22T14:04:00.0659117Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3334.00 MB out of 8191.00 MB, CPU: Usage 2.06%
+2024-10-22T14:04:05.1161779Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3333.00 MB out of 8191.00 MB, CPU: Usage 2.02%
+2024-10-22T14:04:08.0189346Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [1m30s elapsed][0m[0m
+2024-10-22T14:04:10.1734288Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3337.00 MB out of 8191.00 MB, CPU: Usage 1.97%
+2024-10-22T14:04:15.2233459Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3337.00 MB out of 8191.00 MB, CPU: Usage 1.93%
+2024-10-22T14:04:18.0230152Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [1m40s elapsed][0m[0m
+2024-10-22T14:04:20.2704122Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3337.00 MB out of 8191.00 MB, CPU: Usage 1.89%
+2024-10-22T14:04:25.3335665Z ##[debug]Agent environment resources - Disk: C:\ Available 13458.00 MB out of 129545.00 MB, Memory: Used 3335.00 MB out of 8191.00 MB, CPU: Usage 1.85%
+2024-10-22T14:04:28.0274413Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [1m50s elapsed][0m[0m
+2024-10-22T14:04:30.4061856Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3335.00 MB out of 8191.00 MB, CPU: Usage 1.81%
+2024-10-22T14:04:35.4598066Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3335.00 MB out of 8191.00 MB, CPU: Usage 1.78%
+2024-10-22T14:04:38.0365669Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [2m0s elapsed][0m[0m
+2024-10-22T14:04:40.5236238Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3336.00 MB out of 8191.00 MB, CPU: Usage 1.75%
+2024-10-22T14:04:45.5769174Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3337.00 MB out of 8191.00 MB, CPU: Usage 1.71%
+2024-10-22T14:04:48.0505265Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [2m10s elapsed][0m[0m
+2024-10-22T14:04:50.6360347Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3337.00 MB out of 8191.00 MB, CPU: Usage 1.68%
+2024-10-22T14:04:55.6801326Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3337.00 MB out of 8191.00 MB, CPU: Usage 1.65%
+2024-10-22T14:04:58.0661496Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [2m20s elapsed][0m[0m
+2024-10-22T14:05:00.7342760Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3337.00 MB out of 8191.00 MB, CPU: Usage 1.62%
+2024-10-22T14:05:05.7885798Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3337.00 MB out of 8191.00 MB, CPU: Usage 1.59%
+2024-10-22T14:05:08.0749413Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Still creating... [2m30s elapsed][0m[0m
+2024-10-22T14:05:10.8545016Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3326.00 MB out of 8191.00 MB, CPU: Usage 1.57%
+2024-10-22T14:05:12.4156696Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault.nist_compliant_kv: Creation complete after 2m34s [id=/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/disk-encryption-kvt][0m
+2024-10-22T14:05:12.4274303Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Creating...[0m[0m
+2024-10-22T14:05:12.4291648Z [0m[1mmodule.nist_compliant_keyvault.azurerm_key_vault_key.disk_encryption_key: Creating...[0m[0m
+2024-10-22T14:05:15.9093635Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3303.00 MB out of 8191.00 MB, CPU: Usage 1.54%
+2024-10-22T14:05:20.9579708Z ##[debug]Agent environment resources - Disk: C:\ Available 13444.00 MB out of 129545.00 MB, Memory: Used 3297.00 MB out of 8191.00 MB, CPU: Usage 1.51%
+2024-10-22T14:05:22.4377663Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Still creating... [10s elapsed][0m[0m
+2024-10-22T14:05:24.0025013Z [31m╷[0m[0m
+2024-10-22T14:05:24.0025684Z [0m[1mmodule.nist_compliant_keyvault.azurerm_monitor_diagnostic_setting.diagnostic_settings: Creation complete after 12s [id=/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourceGroups/AZ-DE-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-COR-RGP-01/providers/Microsoft.KeyVault/vaults/disk-encryption-kvt|keyvault-diagnostics][0m
+2024-10-22T14:05:24.0574159Z [31m│[0m [0m[1m[31mError: [0m[0m[1mchecking for presence of existing Key "disk-encryption-key" (Key Vault "https://disk-encryption-kvt.vault.usgovcloudapi.net/"): keyvault.BaseClient#GetKey: Failure responding to request: StatusCode=403 -- Original Error: autorest/azure: Service returned an error. Status=403 Code="Forbidden" Message="Caller is not authorized to perform action on resource.\r\nIf role assignments, deny assignments or role definitions were changed recently, please observe propagation time.\r\nCaller: appid=***;oid=f9ddfe35-27da-4df9-a1f3-c1b37a9e9b91;iss=https://sts.windows.net/0ed52ee3-ab90-4e18-ac02-a60dcc265704/\r\nAction: 'Microsoft.KeyVault/vaults/keys/read'\r\nResource: '/subscriptions/95adc3aa-c7df-45b9-9b62-bd573a1a7c2e/resourcegroups/az-de-dod-af-cce-afmc-d-il5-jomsmvp-cor-rgp-01/providers/microsoft.keyvault/vaults/disk-encryption-kvt/keys/disk-encryption-key'\r\nAssignment: (not found)\r\nDenyAssignmentId: null\r\nDecisionReason: null \r\nVault: disk-encryption-kvt;location=usdodeast\r\n" InnerError={"code":"ForbiddenByRbac"}[0m
+2024-10-22T14:05:24.0578467Z ##[debug]$LASTEXITCODE: 1
+2024-10-22T14:05:24.2071506Z [31m│[0m [0m
+2024-10-22T14:05:24.2072134Z ##[debug]Exit code: 1
+2024-10-22T14:05:24.2072980Z ##[debug]Leaving Invoke-VstsTool.
+2024-10-22T14:05:24.2073722Z [31m│[0m [0m[0m  with module.nist_compliant_keyvault.azurerm_key_vault_key.disk_encryption_key,
+2024-10-22T14:05:24.2074416Z [31m│[0m [0m  on modules\keyvault\main.tf line 36, in resource "azurerm_key_vault_key" "disk_encryption_key":
+2024-10-22T14:05:24.2074896Z [31m│[0m [0m  36: resource "azurerm_key_vault_key" "disk_encryption_key" [4m{[0m[0m
+2024-10-22T14:05:24.2075431Z [31m│[0m [0m
+2024-10-22T14:05:24.2075680Z [31m╵[0m[0m
+2024-10-22T14:05:24.3875045Z ##[error]PowerShell exited with code '1'.
+2024-10-22T14:05:24.3883481Z ##[debug]Processed: ##vso[task.logissue type=error]PowerShell exited with code '1'.
+2024-10-22T14:05:24.4044741Z ##[debug]Processed: ##vso[task.complete result=Failed]Error detected
+2024-10-22T14:05:24.4047688Z ##[debug]Leaving C:\agent\_work\_tasks\PowerShell_e213ff0f-5d5c-4791-802d-52ea3e7be1f1\2.232.0\powershell.ps1.
+2024-10-22T14:05:24.4050740Z ##[section]Finishing: Run Terraform Apply

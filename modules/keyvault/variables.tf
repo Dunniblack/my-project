@@ -1,4 +1,4 @@
-# Variables for the Key Vault
+# modules/keyvault/variables.tf
 variable "key_vault_name" {
   type        = string
   description = "The name of the Key Vault."
@@ -22,4 +22,19 @@ variable "tenant_id" {
 variable "log_analytics_workspace_id" {
   type        = string
   description = "Log Analytics Workspace ID for diagnostics and auditing."
+}
+
+variable "subnet_id" {
+  type        = string
+  description = "The ID of the subnet for the private endpoint."
+}
+
+variable "vnet_name" {
+  type        = string
+  description = "The name of the existing VNET to use"
+}
+
+variable "subnet_name" {
+  type        = string
+  description = "The name of the subnet within the VNET to use"
 }
