@@ -48,3 +48,16 @@ module "nist_compliant_keyvault" {
   log_analytics_workspace_id = module.resources.log_analytics_workspace.id
   subnet_id                  = module.resources.subnet.id
 }
+
+module "invoke_runbook" {
+  source = "../modules/invoke-runbook"
+  
+  automation_account_name = "tinubupapi:)"
+  resource_group_name    = var.resource_group_name
+  environment_name       = var.environment_name
+  
+  kv_private_endpoint_id   = module.nist_compliant_keyvault.private_endpoint_id
+  kv_private_dns_link_id   = module.nist_compliant_keyvault.private_dns_link_id
+  disk_encryption_set_id   = module.disk_encryption.disk_encryption_set_id
+  aks_cluster_id          = module.aks.cluster_id
+}
