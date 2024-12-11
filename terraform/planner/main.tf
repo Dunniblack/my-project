@@ -2,7 +2,11 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.3.0"
+      version = "~> 4.11.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.33.0"
     }
   }
   backend "azurerm" {
@@ -11,16 +15,30 @@ terraform {
 }
 
 provider "azurerm" {
-  subscription_id = var.subscription_id
+  subscription_id     = var.subscription_id
+  storage_use_azuread = true
   features {}
+}
+
+data "terraform_remote_state" "az" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = var.tfstate_resource_group
+    storage_account_name = var.tfstate_storage_account
+    container_name       = var.tfstate_container
+    key                  = var.tfstate_key
+    access_key           = "{{ ARM_ACCESS_KEY }}"
+  }
 }
 
 module "name-map" {
   source = "../modules/name-map"
 
   environment_name = var.environment_name
+  parent_module    = var.parent_module
   stage            = var.stage
   project          = var.project
+  c1_project       = var.c1_project
   functional_area  = var.functional_area
   location         = var.location
 }
@@ -31,33 +49,26 @@ module "resources" {
   resource_group_name          = var.resource_group_name
   vnet_name                    = var.vnet_name
   subnet_name                  = var.subnet_name
-  core_resource_group_name     = var.core_resource_group_name
+
+  cmnsvc_resource_group_name   = var.cmnsvc_resource_group_name
+  cmnsvc_vnet_name             = var.cmnsvc_vnet_name
+  cmnsvc_subnet_name           = var.cmnsvc_subnet_name
+
+  core_key_vault_name          = var.core_key_vault_name
+  kv_resource_group_name       = var.kv_resource_group_name
+
   log_analytics_workspace_name = var.log_analytics_workspace_name
-}
-
-
-module "nist_compliant_keyvault" {
-  source = "../modules/keyvault"
-
-  key_vault_name             = module.name-map.key_vault_name
-  resource_group_name        = var.resource_group_name
-  location                   = var.location
-  tenant_id                  = var.tenant_id
-  vnet_name                  = var.vnet_name
-  subnet_name                = var.subnet_name
-  log_analytics_workspace_id = module.resources.log_analytics_workspace.id
-  subnet_id                  = module.resources.subnet.id
+  la_resource_group_name       = var.la_resource_group_name
 }
 
 module "invoke_runbook" {
   source = "../modules/invoke-runbook"
   
-  automation_account_name = "tinubupapi:)"
+  automation_account_name = var.automation_account_name
   resource_group_name    = var.resource_group_name
-  environment_name       = var.environment_name
   
-  kv_private_endpoint_id   = module.nist_compliant_keyvault.private_endpoint_id
-  kv_private_dns_link_id   = module.nist_compliant_keyvault.private_dns_link_id
-  disk_encryption_set_id   = module.disk_encryption.disk_encryption_set_id
-  aks_cluster_id          = module.aks.cluster_id
+  kv_private_endpoint_id   = azurerm.nist_compliant_keyvault.private_endpoint_id
+  kv_private_dns_link_id   = azurerm.nist_compliant_keyvault.private_dns_link_id
+  disk_encryption_set_id   = azurerm.disk_encryption.disk_encryption_set_id
+  aks_cluster_id          = azurerm.aks.cluster_id
 }
