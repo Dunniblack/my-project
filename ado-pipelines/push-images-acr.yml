@@ -1,0 +1,394 @@
+trigger: none
+
+pool:
+  name: AFMC-JOMSMVP
+  
+parameters:
+- name: Source_Registry
+  displayName: The Source of the Docker Registry
+  type: string
+  default: c1-artifactory
+  values:
+  - c1-artifactory
+  - c1-test-acr
+- name: Skip_ImgPkg_Copy
+  displayName: Skip the ImpPkg Copy Command
+  type: boolean
+  default: true
+- name: ImgPkg_Bundles
+  displayName: The ImgPkg Bundles to push to ACR
+  type: string
+  default: "joms/noms-cluster-base-bundle:1.1.0"
+  #joms/unified-planner-devtest-bundle"
+
+variables:
+- group: AFMC-JOMSMVP-KVT
+- name: ARM_CLIENT_ID
+  value: $(spAppId)
+- name: ARM_CLIENT_SECRET
+  value: $(spAppKey)
+- name: ARM_TENANT_ID
+  value: $(tenant-id)
+- name: ARM_ENVIRONMENT
+  value: 'usgovernment'
+- name: FUNC_AREA
+  value: 'AFMC'
+- name: PROJECT
+  value: 'JOMS'
+- name: C1_PROJECT
+  value: '$(PROJECT)MVP'
+# TODO: Make IMGPKG_VERSION dynamic somehow 
+- name: IMGPKG_VERSION
+  value: '0.42'
+- name: IMGPKG_BUILD
+  value: 'windows-amd64'
+# TODO: Add DOCKER_VERSION and DOCKER_BUILD variables, make dynamic somehow 
+
+stages:
+  # Stage 0: Gather Dynamic Variables
+  - stage: variables
+    displayName: 'Gather Dynamic Variables'
+    jobs:
+      - job: get
+        displayName: 'Resolve Dynamic Variables'
+        steps:
+          # Step 0: Get Stage from URI
+          - powershell: >
+              echo "##vso[task.setvariable variable=stage;isOutput=true]
+              $((echo $env:BUILD_REPOSITORY_URI).Split('.')[1])"
+            name: c1
+            displayName: 'Get Stage from URI'
+          
+          # Step 1: Azure CLI Login
+          - powershell: |
+              echo "Logging into Azure using service principal..."
+              az cloud set --name AzureUSGovernment
+              az login --service-principal `
+                --username $(ARM_CLIENT_ID) `
+                --password $(ARM_CLIENT_SECRET) `
+                --tenant $(ARM_TENANT_ID)
+              echo "Listing available subscriptions..."
+              az account list
+              echo "Listing available subscriptions..."
+              $Subscription="$(az account list --query '[0].id' --output tsv)"
+              echo "Subscription: $Subscription"
+              az account set --subscription $Subscription
+              echo "Current account context:"
+              az account show
+            displayName: 'Azure CLI Login and Set Subscription'
+            
+          # Step 3: Get Subscription ID from the Azure CLI
+          - powershell: >
+              echo "##vso[task.setvariable variable=subscription_id;isOutput=true]
+              $(az account list --query '[0].id' --output tsv)"
+            name: az
+            displayName: 'Get Subscription from Azure CLI'
+
+  # Stage 1: Push Docker images to ACR
+  - stage: Push_Images_ACR
+    displayName: 'Push Docker Images to ACR'
+    dependsOn:
+     - variables
+    variables:
+      stage: $[ stageDependencies.variables.get.outputs['c1.stage'] ]
+      subscription_id: $[ stageDependencies.variables.get.outputs['az.subscription_id'] ]
+    jobs:
+      - job: Download_Dependencies
+        displayName: 'Download Dependencies from Artifactory'
+        steps:
+
+          # Step 1: Download ImgPkg from Artifactory
+          - powershell: |
+              echo "Downloading ImgPkg binary from Artifactory..."
+              $stage = "$(stage)".Trim()
+              #TODO:FIXME - Make version # variable
+              $url = "https://artifact.$stage.azure.cce.af.mil:443/" + `
+                "artifactory/$(FUNC_AREA)-$(C1_PROJECT)-$($stage.ToUpper())" + `
+                "/IaC/software/imgpkg-$(IMGPKG_BUILD)-$(IMGPKG_VERSION).exe"
+              $output = "$(Pipeline.Workspace)\imgpkg.exe"
+              $username = '$(artifactoryUser)'
+              $password = '$(artifactorySecret)'
+              $bytes = [System.Text.Encoding]::ASCII.GetBytes("${username}:${password}")
+              $base64AuthInfo = [Convert]::ToBase64String($bytes)
+              $headers = @{Authorization = "Basic $base64AuthInfo"}
+              try {
+                  Invoke-WebRequest -Uri $url -OutFile $output -Headers $headers
+                  echo "ImgPkg binary downloaded successfully."
+              } catch {
+                  Write-Error "Failed to download ImgPkg binary: $_"; exit 1
+              }
+            displayName: 'Download ImgPkg binary from Artifactory'
+    
+          # Step 2: Download Docker from Artifactory
+          - powershell: |
+              echo "Downloading Docker binary from Artifactory..."
+              $stage = "$(stage)".Trim()
+              $url = "https://artifact.$stage.azure.cce.af.mil:443/" + `
+                "artifactory/$(FUNC_AREA)-$(C1_PROJECT)-$($stage.ToUpper())" + `
+                "/IaC/software/docker.exe"
+              $output = "$(Pipeline.Workspace)\docker.exe"
+              $username = '$(artifactoryUser)'
+              $password = '$(artifactorySecret)'
+              $bytes = [System.Text.Encoding]::ASCII.GetBytes("${username}:${password}")
+              $base64AuthInfo = [Convert]::ToBase64String($bytes)
+              $headers = @{Authorization = "Basic $base64AuthInfo"}
+              try {
+                  Invoke-WebRequest -Uri $url -OutFile $output -Headers $headers
+                  echo "Docker binary downloaded successfully."
+              } catch {
+                  Write-Error "Failed to download Docker binary: $_"; exit 1
+              }
+            displayName: 'Download Docker binary from Artifactory'
+
+      # Step 2: Download Docker BuildX from Artifactory
+          - powershell: |
+              echo "Downloading Docker BuildX binary from Artifactory..."
+              $stage = "$(stage)".Trim()
+              #TODO:FIXME - Make version # variable
+              $url = "https://artifact.$stage.azure.cce.af.mil:443/" + `
+                "artifactory/$(FUNC_AREA)-$(C1_PROJECT)-$($stage.ToUpper())" + `
+                "/IaC/software/buildx.exe"
+              $DockerDir = "$($env:USERPROFILE)\.docker"
+              $CliPuginsDir = "$DockerDir\cli-plugins"
+              echo "CliPuginsDir: $CliPuginsDir"
+              New-Item -ItemType Directory -Force -Path $CliPuginsDir
+              $output = "$CliPuginsDir\docker-buildx.exe"
+              $username = '$(artifactoryUser)'
+              $password = '$(artifactorySecret)'
+              $bytes = [System.Text.Encoding]::ASCII.GetBytes("${username}:${password}")
+              $base64AuthInfo = [Convert]::ToBase64String($bytes)
+              $headers = @{Authorization = "Basic $base64AuthInfo"}
+              try {
+                  Invoke-WebRequest -Uri $url -OutFile $output -Headers $headers
+                  echo "Docker BuildX binary downloaded successfully."
+                  gci $CliPuginsDir
+              } catch {
+                  Write-Error "Failed to download Docker BuildX binary: $_"; exit 1
+              }
+            displayName: 'Download Docker BuildX binary from Artifactory'
+          
+      - job: Push_Docker_Images_ACR
+        displayName: 'Push Docker Images to ACR'
+        dependsOn: Download_Dependencies
+        timeoutInMinutes: 120
+        steps:
+        
+          # Step 1: Push Docker images to ACR
+          - powershell: |
+              echo "Push Docker images to ACR"
+
+              $stage = "$(stage)".Trim().ToLower()
+              $c1_project = "$(C1_PROJECT)".ToLower()
+              $func_area = "$(FUNC_AREA)".ToLower()
+              
+              $dockerPath = "$(Pipeline.Workspace)\docker.exe"
+              $imgpkgPath = "$(Pipeline.Workspace)\imgpkg.exe"
+
+              echo "Setup Source Registry Env Vars"
+              if ("${{ parameters.Source_Registry }}" -eq 'c1-artifactory') {
+                $env:IMGPKG_REGISTRY_USERNAME_0='$(artifactoryUser)'
+                $env:IMGPKG_REGISTRY_PASSWORD_0='$(artifactorySecret)'
+                $env:IMGPKG_REGISTRY_HOSTNAME_0="artifact.$stage.azure.cce.af.mil"
+
+                $SourceFolder = "$func_area-$c1_project-docker"
+                $SourceRegistry = "$($env:IMGPKG_REGISTRY_HOSTNAME_0)/$SourceFolder"
+                $TagListUrlPrefix = "https://$($env:IMGPKG_REGISTRY_HOSTNAME_0)/artifactory" + `
+                                                  "/v2/$SourceFolder"
+                $TagListUrlSuffix = "tags/list"
+
+                $base64AuthInfo = [Convert]::ToBase64String(
+                  [System.Text.Encoding]::ASCII.GetBytes(
+                    "$($env:IMGPKG_REGISTRY_USERNAME_0):$($env:IMGPKG_REGISTRY_PASSWORD_0)"))
+                $headers = @{Authorization = "Basic $base64AuthInfo"}
+              } else {
+                $env:IMGPKG_REGISTRY_USERNAME_0='$(c1-test-acr-username)'
+                $env:IMGPKG_REGISTRY_PASSWORD_0='$(c1-test-acr-password)'
+                $env:IMGPKG_REGISTRY_HOSTNAME_0="$(c1-test-acr-registry).azurecr.us"
+
+                $SourceRegistry = "$($env:IMGPKG_REGISTRY_HOSTNAME_0)"
+                $TagListUrlPrefix = "https://$($env:IMGPKG_REGISTRY_HOSTNAME_0)" + `
+                                    "/acr/v1"
+                $TagListUrlSuffix = "_tags"
+
+                $base64AuthInfo = [Convert]::ToBase64String(
+                  [System.Text.Encoding]::ASCII.GetBytes(
+                    '$(c1-test-acr-username):$(c1-test-acr-password)'))
+                $headers = @{Authorization = "Basic $base64AuthInfo"}
+              }
+
+              echo "Setup Destination Registry Env Vars"
+              $env:IMGPKG_REGISTRY_USERNAME_1="$("$(PROJECT)".ToLower())registry$stage"
+              $env:IMGPKG_REGISTRY_PASSWORD_1="$(az acr credential show `
+                                                   -n $env:IMGPKG_REGISTRY_USERNAME_1 `
+                                                   --query 'passwords[0].value' `
+                                                   --output tsv)"
+              $env:IMGPKG_REGISTRY_HOSTNAME_1="$($env:IMGPKG_REGISTRY_USERNAME_1).azurecr.us"
+
+
+              echo "Perform Docker Login to Destination Registry"
+              & "$dockerPath" login `
+                --username $env:IMGPKG_REGISTRY_USERNAME_1 `
+                --password $env:IMGPKG_REGISTRY_PASSWORD_1 `
+                $env:IMGPKG_REGISTRY_HOSTNAME_1
+              
+              foreach($repo in -split "${{ parameters.ImgPkg_Bundles }}" ) {
+                echo "============================================"
+                $repoInfo = $repo.split(":")
+                $repoName =  $repoInfo[0]
+                if ($repoInfo.length -eq 1) {
+                  echo "Resolve to the latest tag, if not specified."
+                  
+                  $TagListUrl="$TagListUrlPrefix/$repoName/$TagListUrlSuffix"
+                  #"TagListUrl: $TagListUrl"
+                  $Result = $(Invoke-WebRequest -Uri $TagListUrl -Headers $headers)
+                  $Tags=($Result.Content | ConvertFrom-Json).tags
+                  if ($Tags[0].GetType().Name -eq "PSCustomObject") {
+                    $Tags = $Tags.Name
+                  }
+                  $Tags=$Tags | where {$_ -notlike "sha256*"}
+                  echo "Available Tags: $Tags"
+            
+                  $Tag = $Tags[-1]
+                } else {
+                  $Tag = $repoInfo[-1]
+                }
+                $RepoTag="$($repoName):$Tag"
+                echo "Bundle Repo:Tag: $RepoTag"
+                echo "Bundle Source: $SourceRegistry/$RepoTag"
+                echo "Bundle Destination: $($env:IMGPKG_REGISTRY_HOSTNAME_1)/$repoName"
+                
+                $ImgpkgBundle = $true
+
+                echo "Copy the Image Bundle"
+                Try {
+                  if("${{ parameters.Skip_ImgPkg_Copy }}" -eq "false") {
+                    & "$imgpkgPath" copy `
+                      -b "$SourceRegistry/$RepoTag" `
+                      --to-repo "$($env:IMGPKG_REGISTRY_HOSTNAME_1)/$repoName" `
+                      --debug `
+                      2>&1
+                  }
+                } Catch {
+                   if($_ -match "Expected bundle image but found plain image") {
+                    $ImgpkgBundle = $false
+                  } else {
+                    $_
+                    echo "Exiting..."
+                    exit 1
+                  }
+                }
+                  
+                echo "ImgpkgBundle: $ImgpkgBundle"
+                
+                if($ImgpkgBundle) {
+                  echo "Pull the Image Bundle"
+                  & "$imgpkgPath" pull `
+                    -b "$SourceRegistry/$RepoTag" `
+                    -o "$repoName\" `
+                    2>&1
+                } else {
+                  echo "Copy the Image"
+                  & "$imgpkgPath" copy `
+                    -i "$SourceRegistry/$RepoTag" `
+                    --to-repo "$($env:IMGPKG_REGISTRY_HOSTNAME_1)/$repoName" `
+                    2>&1
+
+                  echo "Pull the Image"
+                  & "$imgpkgPath" pull `
+                    -i "$SourceRegistry/$RepoTag" `
+                    -o "$repoName\" `
+                    2>&1
+                }
+
+                $imagesYamlPath = Join-Path -Path "$repoName\" -ChildPath ".imgpkg\images.yml"
+                if (-Not (Test-Path -Path $imagesYamlPath)) {
+                    Write-Error "The images.yml file does not exist at path: $imagesYamlPath"
+                    exit 1
+                }
+                $sourceImages = @()
+                $index = 0
+                $ImagesYaml = (Get-Content "$repoName\.imgpkg\images.yml")
+                echo "--------------- .imgpkg\images.yml ---------------"
+                $ImagesYaml
+                echo "--------------------------------------------------"
+                $ImagesYaml -match ' image:' |
+                  ForEach-Object {
+                    $RegistryImageTag = ($_ -split ' image:')[-1].Trim()
+                    #echo "RegistryImageTag: $RegistryImageTag"
+                    $ImageTag = ($RegistryImageTag -split "$SourceRegistry/")[1].Trim()
+                    #echo "ImageTag: $ImageTag"
+                    $ImageTagArray = ($ImageTag -split '@')
+                    $Image =  $ImageTagArray[0].Trim()
+                    #echo "Image: $Image"
+                    $Tag =  $ImageTagArray[1].Trim()
+                    #echo "Tag: $Tag"
+
+                    $sourceImages += @{
+                      "SourceRegistry" = $SourceRegistry
+                      "SourceImage"    = $Image
+                      "SourceTag"      = $Tag
+                    }
+                  }
+                (Get-Content "$repoName\.imgpkg\images.yml") -match ' url:' |
+                  ForEach-Object {
+                    $Url = ($_ -split ' url:')[-1].Trim()
+                    #echo "Url: $Url"
+                    $UrlArray  = ($Url -split '/')
+                    if ($UrlArray[0] -match "[.]") {
+                      $Registry = $UrlArray[0]
+                      $UrlArray  = $UrlArray[1..($UrlArray.Length-1)]
+                    } else {
+                      $Registry = 'null'
+                    }
+                    #echo "Registry: $Registry"
+                    $TrimFolder = ""
+                    if($Registry -match "nexus.*") {
+                      $TrimFolder = $UrlArray[0]
+                      $UrlArray  = $UrlArray[1..($UrlArray.Length-1)]
+                    }
+                    #echo "TrimFolder: $TrimFolder"
+                    $ImageTag = $UrlArray -join '/'
+                    #echo "ImageTag: $ImageTag"
+                    $ImageTagArray = ($ImageTag -split ':')
+                    $Image =  $ImageTagArray[0].Trim()
+                    #echo "Image: $Image"
+                    $Tag =  $ImageTagArray[1].Trim()
+                    #echo "Tag: $Tag"
+
+                    $sourceImages[$index]["DestinationImage"] = $Image
+                    $sourceImages[$index]["DestinationTag"] = $Tag
+                    $index++
+                  }
+              }
+              
+              $sourceImages |
+                ForEach-Object {
+                  echo "-------------"
+                  echo $_
+                  $Source = "$($env:IMGPKG_REGISTRY_HOSTNAME_1)/$($_.SourceImage):$($_.SourceTag.Replace(':','-')).imgpkg"
+                  $Destination = "$($env:IMGPKG_REGISTRY_HOSTNAME_1)/$($_.DestinationImage):$($_.DestinationTag)"
+
+                  echo "Image Source: $Source"
+                  echo "Image Destination: $Destination"
+                  & "$dockerPath" buildx imagetools create --tag $Destination $Source
+                }
+            displayName: 'Push Docker images to ACR'
+
+      #Clean Up run
+      - job: Clean_Up_Job
+        displayName: 'Run Clean Up'
+        dependsOn: Push_Docker_Images_ACR
+        condition: always()
+        steps:
+        - task: DeleteFiles@1
+          condition: always()
+          inputs:
+            SourceFolder: "$(Agent.BuildDirectory)"
+            RemoveDotFiles: true
+            RemoveSourceFolder: false
+            Contents: |
+              a
+              b
+              s/**/*
+              TestResults
+              *.exe

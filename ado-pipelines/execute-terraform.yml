@@ -7,7 +7,7 @@ parameters:
 - name: TF_Module
   displayName: The Terraform Module to Execute
   type: string
-  default: planner
+  default: global
   values:
   - global
   - planner
@@ -24,6 +24,10 @@ parameters:
   displayName: The Terraform Workspace
   type: string
   default: MVP
+- name: TF_Vars
+  displayName: (Optional) Additional Terraform Variables
+  type: string
+  default: ' '
 
 variables:
 - group: AFMC-JOMSMVP-KVT # Variable group name from Azure DevOps Library
@@ -43,15 +47,12 @@ variables:
   value: $(tfstate-storage-account)
 - name: TFSTATE_RESOURCE_GROUP
   value: $(tfstate-resource-group)
-# TODO: Make TF_VERSION dynamic somehow 
-- name: TF_VERSION
-  value: '1.9.5'
-- name: TF_BUILD
-  value: 'windows_amd64'
 - name: FUNC_AREA
   value: 'AFMC'
 - name: PROJECT
-  value: 'JOMSMVP'
+  value: 'JOMS'
+- name: C1_PROJECT
+  value: '$(PROJECT)MVP'
 
 stages:
   # Stage 0: Gather Dynamic Variables
@@ -61,11 +62,12 @@ stages:
       - job: get
         displayName: 'Resolve Dynamic Variables'
         steps:
-          # Step 0: Set Stage from URI
+          # Step 0: Get Stage from URI
           - powershell: >
               echo "##vso[task.setvariable variable=stage;isOutput=true]
               $((echo $env:BUILD_REPOSITORY_URI).Split('.')[1])"
             name: c1
+            displayName: 'Get Stage from URI'
           
           # Step 1: Azure CLI Login
           - powershell: |
@@ -90,15 +92,17 @@ stages:
               echo "##vso[task.setvariable variable=subscription_id;isOutput=true]
               $(az account list --query '[0].id' --output tsv)"
             name: az
+            displayName: 'Get Subscription from Azure CLI'
 
-  # Stage 1: Install Terraform from Artifactory
-  - stage: Install_Terraform
-    displayName: 'Install Terraform from Artifactory'
+  # Stage 1: Execute Terraform
+  - stage: Execute_Terraform
+    displayName: 'Execute Terraform'
     dependsOn:
      - variables
     variables:
       stage: $[ stageDependencies.variables.get.outputs['c1.stage'] ]
-    jobs:
+      subscription_id: $[ stageDependencies.variables.get.outputs['az.subscription_id'] ]
+    jobs:  
       - job: Install_Terraform_Job
         displayName: 'Install Terraform'
         steps:
@@ -108,9 +112,9 @@ stages:
               echo "Downloading Terraform binary from Artifactory..."
               $stage = "$(stage)".Trim()
               $url = "https://artifact.$stage.azure.cce.af.mil:443/" + `
-                "artifactory/$(FUNC_AREA)-$(PROJECT)-$($stage.ToUpper())" + `
-                "/IaC/software/terraform_$(TF_VERSION)_$(TF_BUILD).zip"
-              $output = "$(Pipeline.Workspace)\terraform.zip"
+                "artifactory/$(FUNC_AREA)-$(C1_PROJECT)-$($stage.ToUpper())" + `
+                "/IaC/software/terraform-bundle.zip"
+              $output = "$(Pipeline.Workspace)\terraform-bundle.zip"
               $username = '$(artifactoryUser)'
               $password = '$(artifactorySecret)'
               $bytes = [System.Text.Encoding]::ASCII.GetBytes("${username}:${password}")
@@ -124,19 +128,25 @@ stages:
               }
             displayName: 'Download Terraform binary from Artifactory'
 
-        # Step 2: Extract Terraform
+        # Step 2: Extract Terraform Bundle
           - powershell: |
               try {
                   echo "Extracting Terraform binary..."
-                  Expand-Archive -Path "$(Pipeline.Workspace)\terraform.zip" `
-                    -DestinationPath "$(Pipeline.Workspace)\bin" -Force
+                  Expand-Archive -Path "$(Pipeline.Workspace)\terraform-bundle.zip" `
+                    -DestinationPath "$(Pipeline.Workspace)" -Force
                   echo "Terraform binary extracted successfully."
               } catch {
                   Write-Error "Failed to extract Terraform binary: $_"; exit 1
               }
-              $extractionDir = "$(Pipeline.Workspace)\bin"
-              $extractedFiles = Get-ChildItem -Path $extractionDir
-              $terraformPath = "$extractionDir\terraform_$(TF_VERSION)_$(TF_BUILD).exe"
+              $extractionDir = "$(Pipeline.Workspace)"
+              $binDir = "$(Pipeline.Workspace)\bin"
+              if(-Not (Test-Path $binDir)) {
+                New-Item -Path $binDir -ItemType Directory -Force
+              }
+              $terraformPath = "$binDir\terraform.exe"
+              Move-Item -Path "$extractionDir\terraform.exe" `
+                        -Destination $terraformPath `
+                        -Force
               if (Test-Path $terraformPath) {
                   echo "Terraform executable found at: $terraformPath"
               } else {
@@ -144,10 +154,10 @@ stages:
               }
             displayName: 'Extract and Verify Terraform binary'
 
-        # Step3: Verify Terraform Installation
+        # Step 3: Verify Terraform Installation
           - powershell: |
               echo "Verifying Terraform installation..."
-              $terraformPath = "$(Pipeline.Workspace)\bin\terraform_$(TF_VERSION)_$(TF_BUILD).exe"
+              $terraformPath = "$(Pipeline.Workspace)\bin\terraform.exe"
               if (Test-Path $terraformPath) {
                   echo "Terraform executable found, checking version..."
                   & $terraformPath --version
@@ -156,59 +166,11 @@ stages:
               }
             displayName: 'Verify Terraform version'
 
-# Stage 2: Install Local Mirror from Artifactory
-  - stage: Install_Local_Mirror
-    displayName: 'Install Local Mirror from Artifactory'
-    dependsOn: 
-     - variables
-     - Install_Terraform
-    variables:
-      stage: $[ stageDependencies.variables.get.outputs['c1.stage'] ]
-    jobs:
-      - job: Install_Local_Mirror_Job
-        displayName: 'Install Local Mirror'
-        steps:
-
-        # Step 1: Download Local binary from Artifactory using PowerShell
-          - powershell: |
-              echo "Downloading local.zip from Artifactory..."
-              $stage = "$(stage)".Trim()
-              echo "stage: $stage"
-              $url = "https://artifact.$stage.azure.cce.af.mil:443/" + `
-                "artifactory/$(FUNC_AREA)-$(PROJECT)-$($stage.ToUpper())" + `
-                "/IaC/code/local-provider.zip"
-              $output = "$(Pipeline.Workspace)\local-provider.zip"
-              $username = '$(artifactoryUser)'
-              $password = '$(artifactorySecret)'
-              $bytes = [System.Text.Encoding]::ASCII.GetBytes("${username}:${password}")
-              $base64AuthInfo = [Convert]::ToBase64String($bytes)
-              $headers = @{Authorization = "Basic $base64AuthInfo"}
-              try {
-                  Invoke-WebRequest -Uri $url -OutFile $output -Headers $headers
-                  echo "Terraform binary downloaded successfully."
-              } catch {
-                  Write-Error "Failed to download Terraform binary: $_"; exit 1
-              }
-            displayName: 'Download Terraform binary from Artifactory'
-
-        # Step 2: Extract the local-provider.zip file
-          - powershell: |
-              try {
-                  echo "Extracting local-provider.zip..."
-                  # Use Expand-Archive to extract local-provider.zip file
-                  Expand-Archive -Path "$(Pipeline.Workspace)\local-provider.zip" `
-                    -DestinationPath "$(Pipeline.Workspace)\" -Force
-                  echo "local-provider.zip extracted successfully."
-              } catch {
-                  Write-Error "Failed to extract local-provider.zip: $_"
-                  exit 1
-              }
-
-        # Step 3: Verify the provider directory exists
+        # Step 4: Verify the provider directory exists
           - powershell: |
               echo "Verifying the provider directory..."
               Get-ChildItem -Recurse -Directory "$(Pipeline.Workspace)"
-              $providerPath = "$(Pipeline.Workspace)\local-provider\local-mirror\registry.terraform.io\hashicorp\"
+              $providerPath = "$(Pipeline.Workspace)\plugins\registry.terraform.io\hashicorp\"
               if (Test-Path $providerPath) {
                   echo "Provider directory exists: $providerPath"
                   
@@ -227,36 +189,18 @@ stages:
               }
             displayName: 'Verify provider directory'
 
-  # Stage 3: Terraform Execute using Local Provider
-  - stage: Terraform_Execute
-    displayName: 'Run Terraform Execute using Local Provider'
-    dependsOn: 
-     - variables
-     - Install_Local_Mirror
-    variables:
-      stage: $[ stageDependencies.variables.get.outputs['c1.stage'] ]
-      subscription_id: $[ stageDependencies.variables.get.outputs['az.subscription_id'] ]
-    jobs:
       - job: Terraform_Execute_Job
         displayName: 'Run Terraform'
+        timeoutInMinutes: 120
+        dependsOn:
+        - Install_Terraform_Job
         steps:
-          
-        # Step 1: Verify terraform is installed
-          - powershell: |
-              echo "Verifying Terraform installation..."
-              $terraformPath = "$(Pipeline.Workspace)\bin\terraform_$(TF_VERSION)_$(TF_BUILD).exe"
-              if (Test-Path $terraformPath) {
-                  & $terraformPath --version
-              } else {
-                  Write-Error "Terraform executable not found at: $terraformPath"; exit 1
-              }
-            displayName: 'Verify Terraform Installation'
 
-        # Step 2: Initialize terraform
+        # Step 1: Initialize Terraform
           - powershell: |
-              echo "Initializing Terraform with local provider..."
-              $terraformPath = "$(Pipeline.Workspace)\bin\terraform_$(TF_VERSION)_$(TF_BUILD).exe"
-              $providerPath = "$(Pipeline.Workspace)\local-mirror\local-provider\local-mirror\"
+              echo "Initializing Terraform..."
+              $terraformPath = "$(Pipeline.Workspace)\bin\terraform.exe"
+              $providerPath = "$(Pipeline.Workspace)\plugins\"
 
               if (Test-Path $terraformPath) {
                   Set-Location terraform/${{ parameters.TF_Module }}
@@ -275,28 +219,67 @@ stages:
               } else {
                   Write-Error "Terraform executable not found at: $terraformPath"; exit 1
               }
-            displayName: 'Initialize Terraform with local provider'
+            displayName: 'Initialize Terraform'
 
-        # Step 3:  Execute terraform
+        # Step 2:  Execute terraform
           - powershell: |
               echo "Running Terraform..."
-              $terraformPath = "$(Pipeline.Workspace)\bin\terraform_$(TF_VERSION)_$(TF_BUILD).exe"
-              $workingDirectory = "$(Build.SourcesDirectory)"  # Use Azure DevOps variable for working directory
+              $terraformPath = "$(Pipeline.Workspace)\bin\terraform.exe"
+              $workingDirectory = "$(Build.SourcesDirectory)"
+
+              echo "Download Terraform Variables File, if one exists"
+              
+              $DefaultTfVarsFile = ".\terraform\.default.tfvars"
+              az storage blob download `
+                --file $DefaultTfVarsFile `
+                --account-name "$(TFSTATE_STORAGE_ACCOUNT)" `
+                --container-name "$(TFSTATE_CONTAINER)" `
+                --name "${{ parameters.TF_Workspace }}.tfvars" `
+                --account-key '$(ARM_ACCESS_KEY)' `
+                --auth-mode 'key' `
+                --overwrite 'true' `
+                --no-progress `
+                1> $null
+              
+              echo "Default TF Vars File:"
+              Get-Content $DefaultTfVarsFile
 
               echo "Export Terraform Variables"
+
+              $TF_Vars = "${{ parameters.TF_Vars }}".Trim()
+              if($TF_Vars) {
+                $TF_Vars -Split ' ' |
+                  ForEach-Object {
+                    $KeyValue = $_ -Split '='
+                    $Key = $KeyValue[0]
+                    $Value = $KeyValue[1]
+                    Invoke-Expression "`$env:$Key='$Value'"
+                  }
+              }
+
               $env:TF_VAR_environment_name="${{ parameters.TF_Workspace }}"
+              $env:TF_VAR_parent_module="${{ parameters.TF_Module }}"
               $env:TF_VAR_stage="$(stage)".Trim()
               $env:TF_VAR_subscription_id="$(subscription_id)".Trim()
-              $env:TF_VAR_tenant_id="$(ARM_TENANT_ID)"
               $env:TF_VAR_functional_area="$(FUNC_AREA)"
               $env:TF_VAR_project="$(PROJECT)"
+              $env:TF_VAR_c1_project="$(C1_PROJECT)"
+              $env:TF_VAR_gcds_ips="$(gcds-ips)"
+              $env:TF_VAR_tfstate_resource_group="$(TFSTATE_RESOURCE_GROUP)"
+              $env:TF_VAR_tfstate_storage_account="$(TFSTATE_STORAGE_ACCOUNT)"
+              $env:TF_VAR_tfstate_container="$(TFSTATE_CONTAINER)"
+              $env:TF_VAR_tfstate_key="${{ parameters.TF_Module }}/${{ parameters.TF_Workspace }}.tfstate"
 
-              # Print Env Vars             
-              gci env:
+              # Print TF Vars
+              gci env:TF_VAR*
 
-              # Set additional TF Flag based on Action
+              # Set additional TF Flags based on Action
               $TF_Flags = @()
-              if ("${{ parameters.TF_Action }}" -eq "apply") {
+              if (@("plan","apply","destroy") -Contains "${{ parameters.TF_Action }}") {
+                $TF_Flags += '-var-file'
+                $TF_Flags += "..\.default.tfvars"
+              }
+              if (@("apply","destroy") -Contains "${{ parameters.TF_Action }}") {
                 $TF_Flags += '-auto-approve'
               }
               echo "Terraform Flags:"
@@ -308,7 +291,7 @@ stages:
                   # Check if the working directory exists
                   if (Test-Path $workingDirectory) {
                       Set-Location $workingDirectory/terraform/${{ parameters.TF_Module }}
-                      & "$terraformPath" ${{ parameters.TF_Action }} @TF_Flags -var-file .default.tfvars
+                      & "$terraformPath" ${{ parameters.TF_Action }} @TF_Flags
                       echo "Terraform executed successfully."
                   } else {
                       Write-Error "Working directory not found: $workingDirectory"
@@ -320,14 +303,12 @@ stages:
               }
             displayName: 'Run Terraform'
 
-   # Stage Final: Clean Up run
-  - stage: Clean_Up
-    displayName: 'Clean Up Pipeline'
-    dependsOn: Terraform_Execute
-    condition: always()
-    jobs:
+      # Clean Up run
       - job: Clean_Up_Job
         displayName: 'Run Clean Up'
+        dependsOn:
+        - Terraform_Execute_Job
+        condition: always()
         steps:
         - task: DeleteFiles@1
           condition: always()
@@ -338,6 +319,10 @@ stages:
             Contents: |
               a
               b
+              bin
+              local*
+              plugins
               s/**/*
+              terraform*
               TestResults
-            
+              *.exe
