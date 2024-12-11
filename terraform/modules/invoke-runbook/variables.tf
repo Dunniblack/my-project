@@ -6,13 +6,9 @@ variable "resource_group_name" {
  type = string
 }
 
-variable "environment_name" {
- type = string
-}
-
 variable "runbook_name" {
   type = string
-  default = "update-bastion-hosts-file"
+  default = "update-hosts-file-private-link"
 }
 
 variable "acr_private_endpoint_id" {
@@ -44,4 +40,3 @@ variable "aks_cluster_id" {
  type = string
  default = null
 }
-

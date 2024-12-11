@@ -1,5 +1,5 @@
 resource "null_resource" "invoke_runbook_pre_des" {
- count = var.environment_name == "C1" ? 1 : 0
+ count = 1
 
  depends_on = [
    var.acr_private_endpoint_id,
@@ -20,7 +20,7 @@ resource "null_resource" "invoke_runbook_pre_des" {
 }
 
 resource "null_resource" "invoke_runbook_post_aks" {
- count = var.environment_name == "C1" ? 1 : 0
+ count = 1
 
  depends_on = [
    var.disk_encryption_set_id,
