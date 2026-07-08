@@ -1,0 +1,172 @@
+pipeline {
+    agent  {
+        node {
+            label 'mvcr-linux'
+        }
+    }
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        disableResume()
+        durabilityHint 'PERFORMANCE_OPTIMIZED'
+    }
+
+    environment {
+        TERRRAFORM_JOB = 'Execute-Terraform'
+    }
+
+    parameters {
+        string(
+            defaultValue: 'main',
+            name: 'REPO_BRANCH',
+            trim: true
+        )
+        booleanParam(
+            name: 'EXECUTE_TF_GLOBAL',
+            defaultValue: false,
+            description: 'Execute Terraform Global'
+        )
+        choice(
+            choices: ["plan", "apply", "show"],
+            description: 'Terraform Action',
+            name: 'TF_Action'
+        )
+        string(
+            defaultValue: 'IAC',
+            description: 'Terraform Workspace',
+            name: 'TF_Workspace',
+            trim: true
+        )
+        string(
+            defaultValue: '',
+            description: 'Optional: Terraform Variables',
+            name: 'TF_Vars',
+            trim: true
+        )
+    }
+
+    stages {
+        stage('Setup parameters') {
+            steps {
+                script {
+                    currentBuild.description = "Deploy-All, Branch: ${params.REPO_BRANCH}"
+
+                    env.EXECUTE_TF_GLOBAL = params.EXECUTE_TF_GLOBAL
+                    currentBuild.description += ", TF Global: ${env.EXECUTE_TF_GLOBAL}"
+
+                    env.TF_Action = params.TF_Action
+                    currentBuild.description += ", Action: ${env.TF_Action}"
+
+                    env.TF_Workspace = params.TF_Workspace
+                    currentBuild.description += ", Workspace: ${env.TF_Workspace}"
+
+                    env.TF_Vars = params.TF_Vars
+                    if (params.TF_Vars?.trim()) {
+                        currentBuild.description += ", Vars: ${env.TF_Vars}"
+                    }
+                }
+            }
+        }
+
+        stage('Init Workspace') {
+            steps {
+                script {
+                    cleanWs()
+                }
+            }
+        }
+
+        stage('Execute Terraform Global') {
+            when {
+                expression {
+                    return env.EXECUTE_TF_GLOBAL == "true";
+                }
+            }
+            steps {
+                build job: "${TERRRAFORM_JOB}",
+                    wait: true,
+                    quietPeriod: 0,
+                    parameters: [
+                        string(name: 'REPO_BRANCH', value: params.REPO_BRANCH),
+                        string(name: 'TF_Module', value: 'global'),
+                        string(name: 'TF_Action', value: env.TF_Action),
+                        string(name: 'TF_Workspace', value: env.TF_Workspace),
+                        string(name: 'TF_Vars', value: env.TF_Vars),
+                    ]
+            }
+        }
+        stage('Execute Terraform Infrastructure') {
+            steps {
+                build job: "${TERRRAFORM_JOB}",
+                    wait: true,
+                    quietPeriod: 0,
+                    parameters: [
+                        string(name: 'REPO_BRANCH', value: params.REPO_BRANCH),
+                        string(name: 'TF_Module', value: 'infrastructure'),
+                        string(name: 'TF_Action', value: env.TF_Action),
+                        string(name: 'TF_Workspace', value: env.TF_Workspace),
+                        string(name: 'TF_Vars', value: env.TF_Vars),
+                    ]
+                build job: "${TERRRAFORM_JOB}",
+                    wait: true,
+                    quietPeriod: 0,
+                    parameters: [
+                        string(name: 'REPO_BRANCH', value: params.REPO_BRANCH),
+                        string(name: 'TF_Module', value: 'infrastructure'),
+                        string(name: 'TF_Action', value: env.TF_Action),
+                        string(name: 'TF_Workspace', value: env.TF_Workspace),
+                        string(name: 'TF_Vars', value: env.TF_Vars),
+                        booleanParam(name: 'Generate_Certs', value: true),
+                    ]
+            }
+        }
+        stage('Execute Terraform Software') {
+            steps {
+                build job: "${TERRRAFORM_JOB}",
+                    wait: true,
+                    quietPeriod: 0,
+                    parameters: [
+                        string(name: 'REPO_BRANCH', value: params.REPO_BRANCH),
+                        string(name: 'TF_Module', value: 'software'),
+                        string(name: 'TF_Action', value: env.TF_Action),
+                        string(name: 'TF_Workspace', value: env.TF_Workspace),
+                        string(name: 'TF_Vars', value: env.TF_Vars),
+                    ]
+                build job: "${TERRRAFORM_JOB}",
+                    wait: true,
+                    quietPeriod: 0,
+                    parameters: [
+                        string(name: 'REPO_BRANCH', value: params.REPO_BRANCH),
+                        string(name: 'TF_Module', value: 'software'),
+                        string(name: 'TF_Action', value: env.TF_Action),
+                        string(name: 'TF_Workspace', value: env.TF_Workspace),
+                        string(name: 'TF_Vars', value: env.TF_Vars),
+                        string(name: 'Post_PS_Scripts', value: 'terraform/Verify-KyvernoPolicies.ps1'),
+                    ]
+                script {
+                    def deploy_flags = "TF_VAR_deploy_traefik=true"
+                    deploy_flags += " TF_VAR_deploy_keycloak=true"
+                    deploy_flags += " TF_VAR_deploy_argocd=true"
+                    deploy_flags += " TF_VAR_deploy_alloy=true"
+                    deploy_flags += " TF_VAR_deploy_grafana=true"
+                    deploy_flags += " TF_VAR_deploy_twistlock=true"
+                    deploy_flags += " TF_VAR_deploy_rancher=true"
+                    deploy_flags += " TF_VAR_deploy_mission_planner=true "
+                    env.DEPLOY_FLAGS = deploy_flags
+                }
+                build job: "${TERRRAFORM_JOB}",
+                    wait: true,
+                    quietPeriod: 0,
+                    parameters: [
+                        string(name: 'REPO_BRANCH', value: params.REPO_BRANCH),
+                        string(name: 'TF_Module', value: 'software'),
+                        string(name: 'TF_Action', value: env.TF_Action),
+                        string(name: 'TF_Workspace', value: env.TF_Workspace),
+                        string(name: 'TF_Vars', value: env.DEPLOY_FLAGS + env.TF_Vars),
+                        string(name: 'Post_PS_Scripts', value: 'terraform/Verify-AllArgoApps.ps1'),
+                    ]
+            }
+        }
+    }
+}
