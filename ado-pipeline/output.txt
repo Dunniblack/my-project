@@ -1,0 +1,21 @@
+2026-07-08T22:20:24.9377143Z ##[section]Starting: Run TLS Certificate Expiry Monitor
+2026-07-08T22:20:24.9389834Z ==============================================================================
+2026-07-08T22:20:24.9389918Z Task         : PowerShell
+2026-07-08T22:20:24.9389981Z Description  : Run a PowerShell script on Linux, macOS, or Windows
+2026-07-08T22:20:24.9390039Z Version      : 2.232.0
+2026-07-08T22:20:24.9390098Z Author       : Microsoft Corporation
+2026-07-08T22:20:24.9390162Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/powershell
+2026-07-08T22:20:24.9390218Z ==============================================================================
+2026-07-08T22:20:26.7155630Z Generating script.
+2026-07-08T22:20:26.7924606Z ========================== Starting Command Output ===========================
+2026-07-08T22:20:26.8127960Z ##[command]"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command ". 'C:\agent\_work\_temp\343b177a-ce89-4ddd-8030-198079652755.ps1'"
+2026-07-08T22:20:27.5522298Z C:\agent\_work\14\s\scripts\ps\cert\Check-K8s-Tls-Cert.ps1 : A parameter cannot be found that matches parameter name 
+2026-07-08T22:20:27.5523757Z 'ClusterNamePattern'.
+2026-07-08T22:20:27.5528235Z At C:\agent\_work\_temp\343b177a-ce89-4ddd-8030-198079652755.ps1:9 char:3
+2026-07-08T22:20:27.5529479Z +   -ClusterNamePattern '^AKSJOMS[A-Za-z]{4}GV01$'
+2026-07-08T22:20:27.5530523Z +   ~~~~~~~~~~~~~~~~~~~
+2026-07-08T22:20:27.5531558Z     + CategoryInfo          : InvalidArgument: (:) [Check-K8s-Tls-Cert.ps1], ParentContainsErrorRecordException
+2026-07-08T22:20:27.5535355Z     + FullyQualifiedErrorId : NamedParameterNotFound,Check-K8s-Tls-Cert.ps1
+2026-07-08T22:20:27.5569022Z  
+2026-07-08T22:20:28.7702695Z ##[error]PowerShell exited with code '1'.
+2026-07-08T22:20:29.8307051Z ##[section]Finishing: Run TLS Certificate Expiry Monitor
