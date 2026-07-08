@@ -1,0 +1,1 @@
+Deploy-All, Branch: ANR-2550-argocd-restore, TF Global: true, Action: apply, Workspace: IAC, Vars: TF_VAR_aks_node_pool_min=10 TF_VAR_helm_folder=IaC/helm/ANR-2550-restore TF_VAR_aks_use_kmsv2=false
