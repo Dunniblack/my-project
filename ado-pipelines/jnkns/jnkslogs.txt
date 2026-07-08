@@ -1,0 +1,634 @@
+16:47:16  Started by upstream project "Prod-Test/Sandbox/Faith/Deploy-All
+" build number 5
+
+16:47:16  originally caused by:
+16:47:16   Started by user Anuoluwapo F. Ogunjebi
+
+16:47:16  Resume disabled by user, switching to high-performance, low-durability mode.
+16:47:17  [Pipeline] Start of Pipeline
+16:47:17  [Pipeline] node
+16:47:17  Running on MVCRJenk-02
+ in C:\Agent\workspace\Prod-Test\Sandbox\Faith\Execute-Terraform
+16:47:17  [Pipeline] {
+16:47:17  [Pipeline] withCredentials
+16:47:17  Masking supported pattern matches of %ARM_TENANT_ID% or %ARM_CLIENT_ID% or %ARM_CLIENT_SECRET%
+16:47:17  [Pipeline] {
+16:47:17  [Pipeline] withEnv
+16:47:17  [Pipeline] {
+16:47:17  [Pipeline] timestamps
+16:47:17  The timestamps step is unnecessary when timestamps are enabled for all Pipeline builds.
+16:47:17  [Pipeline] {
+16:47:17  [Pipeline] stage
+16:47:17  [Pipeline] { (Setup parameters)
+16:47:17  [Pipeline] script
+16:47:17  [Pipeline] {
+16:47:17  [Pipeline] }
+16:47:17  [Pipeline] // script
+16:47:17  [Pipeline] }
+16:47:17  [Pipeline] // stage
+16:47:17  [Pipeline] stage
+16:47:17  [Pipeline] { (Init Workspace)
+16:47:17  [Pipeline] script
+16:47:17  [Pipeline] {
+16:47:17  [Pipeline] }
+16:47:17  [Pipeline] // script
+16:47:17  [Pipeline] checkout
+16:47:17  The recommended git tool is: NONE
+16:47:17  using credential 847f6785-1977-46cc-b613-0e5d9d65e5e8
+16:47:17  Fetching changes from the remote Git repository
+16:47:17   > git rev-parse --resolve-git-dir C:\Agent\workspace\Prod-Test\Sandbox\Faith\Execute-Terraform\.git # timeout=10
+16:47:17   > git config remote.origin.url https://bitbucket.seicdevops.com/scm/ni/joms-iac.git # timeout=10
+16:47:17  Fetching upstream changes from https://bitbucket.seicdevops.com/scm/ni/joms-iac.git
+16:47:17   > git --version # timeout=10
+16:47:17   > git --version # 'git version 2.47.1.windows.1'
+16:47:17  using GIT_ASKPASS to set credentials ANR service account for IaC automation
+16:47:17   > git fetch --tags --force --progress -- https://bitbucket.seicdevops.com/scm/ni/joms-iac.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+16:47:20  Checking out Revision 70c82ed7f00a07c67488d9bf102b37e9e8d5274b (origin/ANR-2550-argocd-restore)
+16:47:20   > git rev-parse "origin/ANR-2550-argocd-restore^{commit}" # timeout=10
+16:47:20   > git config core.sparsecheckout # timeout=10
+16:47:20   > git checkout -f 70c82ed7f00a07c67488d9bf102b37e9e8d5274b # timeout=10
+16:47:20  Commit message: "UPDATE airgap job with rotation fix branch"
+16:47:20  [Pipeline] }
+16:47:20  [Pipeline] // stage
+16:47:20  [Pipeline] stage
+16:47:20  [Pipeline] { (Terraform Clean Up)
+16:47:20  [Pipeline] powershell
+16:47:23  [Pipeline] }
+16:47:23  [Pipeline] // stage
+16:47:23  [Pipeline] stage
+16:47:23  [Pipeline] { (Log into Azure)
+16:47:23  [Pipeline] powershell
+16:47:25  The path '.\certs\trust\azure-ca.crt' does not exist.
+16:47:25  Set Cloud Enclave
+16:47:26  Logging into Azure using service principal
+16:47:29  [
+16:47:29    {
+16:47:29      "cloudName": "AzureUSGovernment",
+16:47:29      "homeTenantId": "****",
+16:47:29      "id": "8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445",
+16:47:29      "isDefault": true,
+16:47:29      "managedByTenants": [],
+16:47:29      "name": "System Engineering and Integration Contract",
+16:47:29      "state": "Enabled",
+16:47:29      "tenantId": "****",
+16:47:29      "user": {
+16:47:29        "name": "****",
+16:47:29        "type": "servicePrincipal"
+16:47:29      }
+16:47:29    }
+16:47:29  ]
+16:47:29  Listing available subscriptions
+16:47:31  [
+16:47:31    {
+16:47:31      "cloudName": "AzureUSGovernment",
+16:47:31      "homeTenantId": "****",
+16:47:31      "id": "8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445",
+16:47:31      "isDefault": true,
+16:47:31      "managedByTenants": [],
+16:47:31      "name": "System Engineering and Integration Contract",
+16:47:31      "state": "Enabled",
+16:47:31      "tenantId": "****",
+16:47:31      "user": {
+16:47:31        "name": "****",
+16:47:31        "type": "servicePrincipal"
+16:47:31      }
+16:47:31    }
+16:47:31  ]
+16:47:31  Get default subscription
+16:47:32  Set Subscription: 8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445
+16:47:34  Current account context:
+16:47:35  {
+16:47:35    "environmentName": "AzureUSGovernment",
+16:47:35    "homeTenantId": "****",
+16:47:35    "id": "8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445",
+16:47:35    "isDefault": true,
+16:47:35    "managedByTenants": [],
+16:47:35    "name": "System Engineering and Integration Contract",
+16:47:35    "state": "Enabled",
+16:47:35    "tenantId": "****",
+16:47:35    "user": {
+16:47:35      "name": "****",
+16:47:35      "type": "servicePrincipal"
+16:47:35    }
+16:47:35  }
+16:47:35  Log into Azure with PowerShell Modules
+16:47:40  
+16:47:40  Success!
+16:47:40  [Pipeline] script
+16:47:40  [Pipeline] {
+16:47:40  [Pipeline] powershell
+16:47:42  [Pipeline] echo
+16:47:42  SUBSCRIPTION_ID: 8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445
+16:47:42  
+16:47:42  [Pipeline] }
+16:47:42  [Pipeline] // script
+16:47:42  [Pipeline] }
+16:47:42  [Pipeline] // stage
+16:47:42  [Pipeline] stage
+16:47:42  [Pipeline] { (Download Dependencies)
+16:47:42  [Pipeline] withCredentials
+16:47:42  Masking supported pattern matches of %NEXUS_PASSWORD%
+16:47:42  [Pipeline] {
+16:47:42  [Pipeline] powershell
+16:47:46  [Pipeline] }
+16:47:46  [Pipeline] // withCredentials
+16:47:46  [Pipeline] }
+16:47:46  [Pipeline] // stage
+16:47:46  [Pipeline] stage
+16:47:46  [Pipeline] { (Get AKS Server ID)
+16:47:46  [Pipeline] script
+16:47:46  [Pipeline] {
+16:47:46  [Pipeline] powershell
+16:47:48  ==== Note: Errors below can likely be ignored =========================================
+16:47:52  powershell.exe : ERROR: (ResourceNotFound) The Resource 'Microsoft.ContainerService/managedClusters/AKSJOMSGLOBALIGV01' under resource group 'RG-GovVirginia-ANR' was not found. For more 
+16:47:52  details please go to https://aka.ms/ARMResourceNotFoundFix
+16:47:52  At C:\Agent\workspace\Prod-Test\Sandbox\Faith\Execute-Terraform@tmp\durable-3adf6492\powershellWrapper.ps1:3 char:1
+16:47:52  + & powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comm ...
+16:47:52  + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+16:47:52      + CategoryInfo          : NotSpecified: (ERROR: (Resourc...urceNotFoundFix:String) [], RemoteException
+16:47:52      + FullyQualifiedErrorId : NativeCommandError
+16:47:52   
+16:47:52  Code: ResourceNotFound
+16:47:52  Message: The Resource 'Microsoft.ContainerService/managedClusters/AKSJOMSGLOBALIGV01' under resource group 'RG-GovVirginia-ANR' was not found. For more details please go to 
+16:47:52  https://aka.ms/ARMResourceNotFoundFix
+16:47:52  External command failed with exit code 3
+16:47:52  AksServerId: 
+16:47:52  AksLocalAccountsDisabled: true
+16:47:52  Retrieving AKS cluster details...
+16:47:55  ERROR: (ResourceNotFound) The Resource 'Microsoft.ContainerService/managedClusters/AKSJOMSGLOBALIGV01' under resource group 'RG-GovVirginia-ANR' was not found. For more details please go to 
+16:47:55  https://aka.ms/ARMResourceNotFoundFix
+16:47:55  Code: ResourceNotFound
+16:47:55  Message: The Resource 'Microsoft.ContainerService/managedClusters/AKSJOMSGLOBALIGV01' under resource group 'RG-GovVirginia-ANR' was not found. For more details please go to 
+16:47:55  https://aka.ms/ARMResourceNotFoundFix
+16:47:55  An error occurred External command failed with exit code 3
+16:47:55  AksUseServicePrincipal: false
+16:47:55  AksArgoCdDeployed: false
+16:47:55  AksKubeApiServerEndpointIp: 
+16:47:55  =======================================================================================
+16:47:55  [Pipeline] echo
+16:47:55  Final Result:
+16:47:55  [Pipeline] powershell
+16:47:57  [Pipeline] echo
+16:47:57  AksServerId: 
+16:47:57  
+16:47:57  [Pipeline] powershell
+16:47:58  [Pipeline] echo
+16:47:58  AksLocalAccountsDisabled: true
+16:47:58  
+16:47:58  [Pipeline] powershell
+16:48:00  [Pipeline] echo
+16:48:00  AksUseServicePrincipal: false
+16:48:00  
+16:48:00  [Pipeline] powershell
+16:48:01  [Pipeline] echo
+16:48:01  AksKmsV2Setup: false
+16:48:01  
+16:48:01  [Pipeline] powershell
+16:48:02  [Pipeline] echo
+16:48:02  AksArgoCdDeployed: false
+16:48:02  
+16:48:02  [Pipeline] powershell
+16:48:04  [Pipeline] echo
+16:48:04  AksKubeApiServerEndpointIp: AksKubeApiServerEndpointIp
+16:48:04  
+16:48:04  [Pipeline] }
+16:48:04  [Pipeline] // script
+16:48:04  [Pipeline] }
+16:48:04  [Pipeline] // stage
+16:48:04  [Pipeline] stage
+16:48:04  [Pipeline] { (Initialize Terraform)
+16:48:04  [Pipeline] withCredentials
+16:48:04  Masking supported pattern matches of %ARM_ACCESS_KEY%
+16:48:04  [Pipeline] {
+16:48:04  [Pipeline] powershell
+16:48:06  Initializing Terraform
+16:48:06  Initializing the backend...
+16:48:06  
+16:48:06  Successfully configured the backend "azurerm"! Terraform will automatically
+16:48:06  use this backend unless the backend configuration changes.
+16:48:07  Initializing modules...
+16:48:07  - alerts in ..\modules\alerts
+16:48:07  - invoke_runbook_post_acr_private_link in ..\modules\invoke-runbook
+16:48:07  - name-map in ..\modules\name-map
+16:48:07  - one_year_retention_law_tables in ..\modules\string-to-object-map
+16:48:07  - one_year_retention_law_tables_c1_only in ..\modules\string-to-object-map
+16:48:07  - resources in ..\modules\resources
+16:48:07  - tags in ..\modules\tags
+16:48:07  Initializing provider plugins...
+16:48:07  - terraform.io/builtin/terraform is built in to Terraform
+16:48:07  - Finding latest version of hashicorp/null...
+16:48:07  - Finding hashicorp/azurerm versions matching "~> 4.58.0"...
+16:48:07  - Finding latest version of hashicorp/local...
+16:48:07  - Installing hashicorp/null v3.2.4...
+16:48:07  - Installed hashicorp/null v3.2.4 (unauthenticated)
+16:48:07  - Installing hashicorp/azurerm v4.58.0...
+16:48:08  - Installed hashicorp/azurerm v4.58.0 (unauthenticated)
+16:48:08  - Installing hashicorp/local v2.6.2...
+16:48:08  - Installed hashicorp/local v2.6.2 (unauthenticated)
+16:48:08  Terraform has created a lock file .terraform.lock.hcl to record the provider
+16:48:08  selections it made above. Include this file in your version control repository
+16:48:08  so that Terraform can guarantee to make the same selections by default when
+16:48:08  you run "terraform init" in the future.
+16:48:08  
+16:48:08  
+16:48:08  Warning: Incomplete lock file information for providers
+16:48:08  
+16:48:08  Due to your customized provider installation methods, Terraform was forced to
+16:48:08  calculate lock file checksums locally for the following providers:
+16:48:08    - hashicorp/azurerm
+16:48:08    - hashicorp/local
+16:48:08    - hashicorp/null
+16:48:08  
+16:48:08  The current .terraform.lock.hcl file only includes checksums for
+16:48:08  windows_amd64, so Terraform running on another platform will fail to install
+16:48:08  these providers.
+16:48:08  
+16:48:08  To calculate additional checksums for another platform, run:
+16:48:08    terraform providers lock -platform=linux_amd64
+16:48:08  (where linux_amd64 is the platform to generate)
+16:48:08  Terraform has been successfully initialized!
+16:48:08  
+16:48:08  You may now begin working with Terraform. Try running "terraform plan" to see
+16:48:08  any changes that are required for your infrastructure. All Terraform commands
+16:48:08  should now work.
+16:48:08  
+16:48:08  If you ever set or change modules or backend configuration for Terraform,
+16:48:08  rerun this command to reinitialize your working directory. If you forget, other
+16:48:08  commands will detect it and remind you to do so if necessary.
+16:48:08  Terraform initialized successfully.
+16:48:08  [Pipeline] }
+16:48:08  [Pipeline] // withCredentials
+16:48:08  [Pipeline] }
+16:48:08  [Pipeline] // stage
+16:48:08  [Pipeline] stage
+16:48:08  [Pipeline] { (Execute Terraform)
+16:48:08  [Pipeline] withCredentials
+16:48:08  Masking supported pattern matches of %GIT_PW%
+16:48:08  [Pipeline] {
+16:48:08  [Pipeline] withCredentials
+16:48:08  Masking supported pattern matches of %ARM_ACCESS_KEY%
+16:48:08  [Pipeline] {
+16:48:08  [Pipeline] powershell
+16:48:11  Running Terraform...
+16:48:11  Download Workspace Terraform Variables File, if one exists
+16:48:11  Downloading Global.tfvars in wdsf enclave
+16:48:15  ============ Default TF Vars File =============
+16:48:15  # Name of the provided AKS Resource Groups
+16:48:15  global_resource_group_name = "RG-GovVirginia-ANR"
+16:48:15  aks_resource_group_name    = "RG-GovVirginia-ANR"
+16:48:15  
+16:48:15  # Name of the dedicated AKS Resources - VNet, Subnet, RG
+16:48:15  vnet_name                    = "VNet-GovVirginia-ANR"
+16:48:15  subnet_name                  = "AKS-ANR"
+16:48:15  api_server_subnet_name		 = "api-server-subnet-iac"
+16:48:15  vnet_resource_group_name          = "RG-GovVirginia-ANR"
+16:48:15  
+16:48:15  # Name of C1 Common Service Names - VNet, Subnet, RG
+16:48:15  cmnsvc_vnet_name             = "VNet-DoDEast-ANR"
+16:48:15  cmnsvc_subnet_name           = "ANR-COR-SNT"
+16:48:15  cmnsvc_resource_group_name   = "RG-DoDEast-ANR"
+16:48:15  
+16:48:15  # Name of the C1 Core Key Vault, RG
+16:48:15  core_key_vault_name          = "DEJOMSMVPWIL5KV"
+16:48:15  kv_resource_group_name       = "RG-DoDEast-ANR"
+16:48:15  
+16:48:15  # Name of the C1 Log Analytics, RG
+16:48:15  log_analytics_workspace_name = "AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01"
+16:48:15  la_resource_group_name       = "RG-GovVirginia-ANR"
+16:48:15  
+16:48:15  # Name of the C1 Automation Account, RG
+16:48:15  automation_account_name      = ""
+16:48:15  aa_resource_group_name       = ""
+16:48:15  
+16:48:15  # Azure Active Directory Group IDs of the Admin and Read-Only groups
+16:48:15  admin_aad_group_ids         = "c71fa59b-cbd5-45be-b087-cee631d30133"
+16:48:15  #"160dee34-9596-4c84-ae85-74260793a702"
+16:48:15  read_only_aad_group_id       = ""
+16:48:15  
+16:48:15  # Managed identities for AKS 
+16:48:15  # (Required if using Dedicated Hosts)
+16:48:15  mi_resource_group_name       = "RG-GovVirginia-ANR"
+16:48:15  mi_kubelet_name              = "JOMS-IAC-AKS-KUBELET-IDENTITY"
+16:48:15  mi_control_plane_name        = "JOMS-IAC-AKS-CP-IDENTITY"
+16:48:15  mi_velero_name               = "ANR-velero-identity"
+16:48:15  mi_loki_name                 = "ANR-LOKI-IDENTITY"
+16:48:15  mi_eso_name                  = "ANR-ESO-IDENTITY"
+16:48:15  =============== Terraform Flags ===============
+16:48:15  -no-color -compact-warnings -var-file ..\.default.tfvars -auto-approve
+16:48:15  ===============================================
+16:48:15  ================= KUBECONFIG ==================
+16:48:16  powershell.exe : Get-Content : Cannot find path 'C:\Agent\workspace\Prod-Test\Sandbox\Faith\Execute-Terraform\kubeconfig' because it 
+16:48:16  At C:\Agent\workspace\Prod-Test\Sandbox\Faith\Execute-Terraform@tmp\durable-4111ac8c\powershellWrapper.ps1:3 char:1
+16:48:16  + & powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Comm ...
+16:48:16  + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+16:48:16      + CategoryInfo          : NotSpecified: (Get-Content : C...ig' because it :String) [], RemoteException
+16:48:16      + FullyQualifiedErrorId : NativeCommandError
+16:48:16   
+16:48:16  does not exist.
+16:48:17  At C:\Agent\workspace\Prod-Test\Sandbox\Faith\Execute-Terraform\scripts\ps\terraform\Execute-Terraform.ps1:159 char:1
+16:48:17  + Get-Content $env:KUBECONFIG
+16:48:18  + ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+16:48:18      + CategoryInfo          : ObjectNotFound: (C:\Agent\worksp...form\kubeconfig:String) [Get-Content], ItemNotFoundEx 
+16:48:18     ception
+16:48:19      + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.GetContentCommand
+16:48:19   
+16:48:19  ===============================================
+16:48:19  Found Terraform at: C:\Agent\workspace\Prod-Test\Sandbox\Faith\Execute-Terraform\terraform.exe
+16:48:19  TfAction: apply
+16:48:19  =============== Print TF Vars ===============
+16:48:19  
+16:48:19  Name                           Value                                                                                   
+16:48:19  ----                           -----                                                                                   
+16:48:19  TF_VAR_aks_argo_cd_deployed    false                                                                                   
+16:48:19  TF_VAR_aks_kmsv2_setup         false                                                                                   
+16:48:19  TF_VAR_aks_kube_api_server_... AksKubeApiServerEndpointIp                                                              
+16:48:19  TF_VAR_aks_node_pool_min       10                                                                                      
+16:48:19  TF_VAR_aks_use_kmsv2           false                                                                                   
+16:48:19  TF_VAR_aks_use_service_prin... false                                                                                   
+16:48:19  TF_VAR_c1_project              JOMSMVP                                                                                 
+16:48:19  TF_VAR_enclave                 wdsf                                                                                    
+16:48:19  TF_VAR_environment_name        Global                                                                                  
+16:48:19  TF_VAR_functional_area         AFMC                                                                                    
+16:48:19  TF_VAR_helm_folder             IaC/helm/ANR-2550-restore                                                               
+16:48:19  TF_VAR_metadata_host           management.usgovcloudapi.net                                                            
+16:48:19  TF_VAR_parent_module           global                                                                                  
+16:48:19  TF_VAR_project                 JOMS                                                                                    
+16:48:19  TF_VAR_root_domain             seicdevops.com                                                                          
+16:48:19  TF_VAR_stage                   iac                                                                                     
+16:48:19  TF_VAR_subscription_id         8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445                                                    
+16:48:19  TF_VAR_tfstate_container       terraformbackend                                                                        
+16:48:19  TF_VAR_tfstate_key             global/Global.tfstate                                                                   
+16:48:19  TF_VAR_tfstate_resource_group  RG-GovVirginia-ANR                                                                      
+16:48:19  TF_VAR_tfstate_storage_account gvjomsmvpwil5stg                                                                        
+16:48:19  Running Execute-Terraform...
+16:48:21  data.terraform_remote_state.az: Reading...
+16:48:21  data.terraform_remote_state.az: Read complete after 0s
+16:48:21  data.local_file.install_client_tools: Reading...
+16:48:21  data.local_file.ado_agent_pool_monitor_script: Reading...
+16:48:21  data.local_file.update_bastion_hosts_file: Reading...
+16:48:21  data.local_file.custom_hosts_entry: Reading...
+16:48:21  data.local_file.install_client_tools: Read complete after 0s [id=0c687ceaf2476ad8a76950afcb7bdfcf2c335a86]
+16:48:21  data.local_file.update_bastion_hosts_file: Read complete after 0s [id=d2b855dee26aa09636e67b034fb72066a2426e0f]
+16:48:21  data.local_file.custom_hosts_entry: Read complete after 0s [id=19765311ae4c2297eae6d1f580916d372d1fb3f9]
+16:48:21  data.local_file.ado_agent_pool_monitor_script: Read complete after 0s [id=d48e6736002fff177553a5130f0b47d960e10153]
+16:48:22  module.resources.data.azurerm_resource_group.aks: Reading...
+16:48:22  module.resources.data.azurerm_virtual_network.aks: Reading...
+16:48:22  module.resources.data.azurerm_subnet.cmnsvc: Reading...
+16:48:22  data.azurerm_policy_set_definition.cis_benchmark: Reading...
+16:48:22  module.resources.data.azurerm_key_vault.c1: Reading...
+16:48:22  module.alerts.azurerm_monitor_action_group.help_desk: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/actionGroups/Help-Desk]
+16:48:22  module.resources.data.azurerm_virtual_network.cmnsvc: Reading...
+16:48:22  module.resources.data.azurerm_log_analytics_workspace.c1: Reading...
+16:48:22  azurerm_private_dns_zone.keyvault: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Network/privateDnsZones/privatelink.vaultcore.azure.net]
+16:48:22  module.alerts.azurerm_monitor_action_group.cyber: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/actionGroups/Cyber]
+16:48:22  module.resources.data.azurerm_virtual_network.cmnsvc: Read complete after 0s [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-DoDEast-ANR/providers/Microsoft.Network/virtualNetworks/VNet-DoDEast-ANR]
+16:48:22  module.alerts.azurerm_monitor_action_group.pmo: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/actionGroups/PMO]
+16:48:22  module.resources.data.azurerm_resource_group.aks: Read complete after 0s [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR]
+16:48:22  module.resources.data.azurerm_subnet.aks: Reading...
+16:48:22  module.resources.data.azurerm_subnet.cmnsvc: Read complete after 0s [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-DoDEast-ANR/providers/Microsoft.Network/virtualNetworks/VNet-DoDEast-ANR/subnets/ANR-COR-SNT]
+16:48:22  module.resources.data.azurerm_key_vault.c1: Read complete after 0s [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-DoDEast-ANR/providers/Microsoft.KeyVault/vaults/DEJOMSMVPWIL5KV]
+16:48:22  module.resources.data.azurerm_client_config.current: Reading...
+16:48:22  module.alerts.azurerm_monitor_action_group.devops: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/actionGroups/DevOps]
+16:48:22  module.resources.data.azurerm_client_config.current: Read complete after 0s [id=Y2xpZW50Q29uZmlncy9jbGllbnRJZD0x****c7b2JqZWN0SWQ9ZGY0YTlkMjEtMWZlNS00OThjLWI4NTItOTU2NWE5OGYyMzY0O3N1YnNjcmlwdGlvbklkPThhMWE5MGZhLWY1YjAtNDdkYy05ZDUxLTFjZmFkZDJhYTQ0NTt0ZW5hbnRJZD1i****]
+16:48:22  module.resources.data.azurerm_virtual_network.aks: Read complete after 0s [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Network/virtualNetworks/VNet-GovVirginia-ANR]
+16:48:22  azurerm_key_vault_secret.dod_ca_certs: Refreshing state... [id=https://dejomsmvpwil5kv.vault.usgovcloudapi.net/secrets/dod-ca-certs/8e46bc9356bc47289c81aa9865c54e1a]
+16:48:22  data.azurerm_key_vault_secret.ingress_ips: Reading...
+16:48:22  module.resources.data.azurerm_subnet.aks: Read complete after 0s [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Network/virtualNetworks/VNet-GovVirginia-ANR/subnets/AKS-ANR]
+16:48:22  module.resources.data.azurerm_log_analytics_workspace.c1: Read complete after 0s [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_six_months["AppCenterError"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/AppCenterError]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_six_months["StorageQueueLogs"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/StorageQueueLogs]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_six_months["ComputerGroup"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/ComputerGroup]
+16:48:22  data.azurerm_key_vault_secret.ingress_ips: Read complete after 1s [id=https://dejomsmvpwil5kv.vault.usgovcloudapi.net/secrets/ingress-ips/e406b3c7cbf44415875a8db96f387309]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_six_months["StorageFileLogs"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/StorageFileLogs]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_six_months["StorageBlobLogs"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/StorageBlobLogs]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_three_months["Perf"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/Perf]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["KubeNodeInventory"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/KubeNodeInventory]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_three_months["AzureMetrics"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/AzureMetrics]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_three_months["Heartbeat"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/Heartbeat]
+16:48:22  data.azurerm_policy_set_definition.cis_benchmark: Read complete after 1s [id=/providers/Microsoft.Authorization/policySetDefinitions/612b5213-9160-4969-8578-1518bd2a000c]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_three_months["InsightsMetrics"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/InsightsMetrics]
+16:48:22  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["AKSAudit"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/AKSAudit]
+16:48:23  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["AZKVAuditLogs"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/AZKVAuditLogs]
+16:48:23  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["ContainerLog"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/ContainerLog]
+16:48:23  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["ContainerLogV2"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/ContainerLogV2]
+16:48:23  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["KubeEvents"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/KubeEvents]
+16:48:23  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["AKSAuditAdmin"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/AKSAuditAdmin]
+16:48:23  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["KubeHealth"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/KubeHealth]
+16:48:23  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["KubePodInventory"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/KubePodInventory]
+16:48:25  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["AKSControlPlane"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/AKSControlPlane]
+16:48:25  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["Syslog"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/Syslog]
+16:48:25  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["Alert"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/Alert]
+16:48:25  azurerm_log_analytics_workspace_table.law_audit_retention_one_year["AzureActivity"]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.OperationalInsights/workspaces/AZ-GV-DOD-AF-CCE-AFMC-T-IL5-JOMSTEST-OMS-01/tables/AzureActivity]
+16:48:25  azurerm_private_dns_zone_virtual_network_link.keyvault_link_default: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Network/privateDnsZones/privatelink.vaultcore.azure.net/virtualNetworkLinks/keyvault-link-default]
+16:48:25  azurerm_storage_account.global-storage-account: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Storage/storageAccounts/gvjomsmvpglobaliil5glb]
+16:48:25  azurerm_resource_group_policy_assignment.cis_benchmark[0]: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Authorization/policyAssignments/cis-benchmark]
+16:48:25  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.audit_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Velero Audit Log Forwarding Failure]
+16:48:25  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.velero_backup_job_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Velero Backup Job Failure]
+16:48:25  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.traefik_repeated_failed_auth_services: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Traefik Repeated Failed Basic Auth on Services]
+16:48:25  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.prisma_excessive_failed_logins: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/PrismaCloud Excessive Failed Logins]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.traefik_unavailable_or_unresponsive: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Traefik Unavailable or Unresponsive]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.grafana_unusual_admin_console_access: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Grafana Unusual Admin Console Access]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.prisma_runtime_settings_changed: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/PrismaCloud Runtime Settings Changed]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.secret_expiry_alert: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/SecretExpiryAlert]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.keycloak_realm_settings_changed: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Keycloak Realm Settings Changed]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.grafana_excessive_failed_logins: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Grafana Excessive Failed Logins]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.secret_access_spike: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/External Secrets Operator (ESO) Audit Surge in Secret Fetches]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.cert_manager_detect_unapproved_issuer: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Cert Manager Detect Unapproved issuer]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.prisma_after_hours_login: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/PrismaCloud After Hours Login]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.rancher_policy_drift_detected: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Rancher Policy Drift Detected]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.keycloak_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Keycloak Audit Log Forwarding Failure]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.grafana_audit_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Grafana Audit Log Forwarding Failure]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.argocd_unauthorized_resource_access: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/ArgoCD Unauthorized Resource Access]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.rancher_after_hours_login: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Rancher After Hours Login]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.eso_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/External Secrets Operator (ESO) Audit Log Forwarding Failure]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.prisma_unavailable_or_unresponsive: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/PrismaCloud Unavailable or Unresponsive]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.aks_excessive_failed_logins: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/AKS Excessive Failed Logins to API Server]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.keycloak_unavailable_or_unresponsive: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Keycloak Unavailable or Unresponsive]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.rancher_unavailable_or_unresponsive: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Rancher Unavailable or Unresponsive]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.prisma_new_admin_assigned: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/PrismaCloud New Admin Assigned]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.rancher_unapproved_cluster_access_attempt: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Rancher Unapproved Cluster Access Attempt]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.certificate_expiry_alert: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/CertificateExpiryAlert]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.cert_manager_unavailable_or_unresponsive: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Cert Manager Unavailable or Unresponsive]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.argocd_excessive_failed_logins: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Argocd Excessive Failed Logins]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.rancher_unauthorized_cluster_config_change: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Unauthorized Cluster Config Change]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.cert_manager_audit_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Cert Manager Audit Log Forwarding Failure]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.velero_stale_backup: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Velero Stale Backup]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.argocd_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Argocd Audit Log Forwarding Failure]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.grafana_unavailable_or_unresponsive: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Grafana Unavailable or Unresponsive]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.eso_excessive_secret_access_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/External Secrets Operator (ESO) Audit Excessive ESO Secret Access Failures]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.ArgoCD_unavailable_or_unresponsive: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/ArgoCD Unavailable or Unresponsive]
+16:48:26  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.keycloak_realm_admin_assigned: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Keycloak New Realm Admin Assigned]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.velero_restore_job_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Velero Restore Job Failure]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.eso_unauthorized_secret_access: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/External Secrets Operator (ESO) Audit Unauthorized ESO Secret Access]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.aks_rbac_changes_detected: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/AKS RBAC Changes Detected]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.rancher_excessive_failed_logins: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Rancher Excessive Failed Logins]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.keycloak_excessive_failed_logins: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Keycloak Excessive Failed Logins]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.grafana_log_queue_overflow: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Grafana Log Queue Overflow]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.cert_manager_detect_unapproved_domain: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Cert Manager Detect Unapproved domain]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.kyverno_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Kyverno Audit Log Forwarding Failure]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.deployed_drift-detection: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/ArgoCd Drift Detection]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.velero_unauthorized_backup_or_restore_attempt: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Unauthorized Backup or Restore Attempt]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.kyverno_unavailable_or_unresponsive: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Kyverno Unavailable or Unresponsive]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.eso_unavailable_or_unresponsive: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/ESO Unavailable or Unresponsive]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.prisma_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/PrismaCloud Audit Log Forwarding Failure]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.rancher_admin_role_assigned: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Rancher New Admin Role Assigned]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.traefik_data_exfiltration_attempt: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Traefik Data Exfiltration Attempt]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.keycloak_disabled_user_attempted_login: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Keycloak Disabled User Attempted Login]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.keycloak_after_hours_login: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Keycloak After Hours Login]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.grafana_unauthorized_api_access: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Grafana Unauthorized Api Access]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.traefik_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Traefik Audit Log Forwarding Failure]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.kyverno_privileged_pod_creation_attempted: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Kyverno Privileged Pod Creation Attempted]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.aks_new_cluster_admin_role_binding: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/AKS New Cluster-Admin Role Binding Created]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.argocd_after_hours_login: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Argocd After Hours Login]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.rancher_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Rancher Audit Log Forwarding Failure]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.traefik_unsecured_external_access: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Traefik External Access to Unsecured Routes]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.aks_log_forwarding_failure: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/AKS Audit Log Forwarding Failure]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.velero_unavailable_or_unresponsive: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Velero Unavailable or Unresponsive]
+16:48:27  azurerm_key_vault_access_policy.global-storage: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-DoDEast-ANR/providers/Microsoft.KeyVault/vaults/DEJOMSMVPWIL5KV/objectId/572700b2-639c-457a-991c-43a7446e9c44]
+16:48:27  azurerm_monitor_diagnostic_setting.global-storage-account-service: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Storage/storageAccounts/gvjomsmvpglobaliil5glb/blobServices/default/|global-storage-account-blob-diagnostics]
+16:48:27  azurerm_storage_container.k8s-tls-alert-container: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Storage/storageAccounts/gvjomsmvpglobaliil5glb/blobServices/default/containers/k8s-tls-alert]
+16:48:27  azurerm_storage_container.drift-container: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Storage/storageAccounts/gvjomsmvpglobaliil5glb/blobServices/default/containers/drift]
+16:48:27  azurerm_monitor_diagnostic_setting.global-storage-account: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Storage/storageAccounts/gvjomsmvpglobaliil5glb|global-storage-account-diagnostics]
+16:48:27  azurerm_storage_container.k8s-credentials-alert-container: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Storage/storageAccounts/gvjomsmvpglobaliil5glb/blobServices/default/containers/k8s-credentials-alert]
+16:48:27  azurerm_storage_container.oscap-image-scans-container: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Storage/storageAccounts/gvjomsmvpglobaliil5glb/blobServices/default/containers/oscap-image-scans]
+16:48:27  azurerm_key_vault_key.global-storage: Refreshing state... [id=https://dejomsmvpwil5kv.vault.usgovcloudapi.net/keys/global-storage-key/1a602ebcfc6d45f1b3ba677c5a6bc28c]
+16:48:27  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.k8s_tls_expiration_alert: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/K8s TLS Cert Expiration Alerts]
+16:48:28  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.terraform_drift: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/Terraform Drift Detected]
+16:48:28  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.k8s_credentials_expiration_alert: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/K8s Management Credential Expiration Alerts]
+16:48:28  azurerm_storage_account_customer_managed_key.global-storage: Refreshing state... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Storage/storageAccounts/gvjomsmvpglobaliil5glb]
+16:48:28  
+16:48:28  Terraform used the selected providers to generate the following execution
+16:48:28  plan. Resource actions are indicated with the following symbols:
+16:48:28    ~ update in-place
+16:48:28  
+16:48:28  Terraform will perform the following actions:
+16:48:28  
+16:48:28    # module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.aks_log_forwarding_failure will be updated in-place
+16:48:28    ~ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "aks_log_forwarding_failure" {
+16:48:28        ~ description                            = <<-EOT
+16:48:28              NIST CONTROL: AU-2, AU-12
+16:48:28            - Alert when AKS fails to forward logs to centralized log systems or SIEM
+16:48:28            + Alert when AKS fails to forward logs to centralized log systems or SIEM ( 1 minute)
+16:48:28          EOT
+16:48:28          id                                     = "/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/AKS Audit Log Forwarding Failure"
+16:48:28          name                                   = "AKS Audit Log Forwarding Failure"
+16:48:28          tags                                   = {
+16:48:28              "Enclave"            = "wdsf"
+16:48:28              "ManagedBy"          = "Terraform"
+16:48:28              "Service"            = "monitor-alert"
+16:48:28              "TerraformWorkspace" = "Global"
+16:48:28          }
+16:48:28        ~ window_duration                        = "PT15M" -> "PT5M"
+16:48:28          # (16 unchanged attributes hidden)
+16:48:28  
+16:48:28        ~ criteria {
+16:48:28            ~ query                   = <<-EOT
+16:48:28                  let MinEvents = 5;        // require at least X events normally
+16:48:28                  union
+16:48:28                  (
+16:48:28                      AKSAudit
+16:48:28                -     | where TimeGenerated > ago(15m)
+16:48:28                +     | where TimeGenerated > ago(5m)
+16:48:28                      | extend ClusterName = extract(@"/managedclusters/([^/]+)", 1, _ResourceId)
+16:48:28                      | summarize AuditCount = count() by ClusterName
+16:48:28                  ),
+16:48:28                  (
+16:48:28                      AKSControlPlane
+16:48:28                -     | where TimeGenerated > ago(15m)
+16:48:28                +     | where TimeGenerated > ago(5m)
+16:48:28                      | extend ClusterName = extract(@"/managedclusters/([^/]+)", 1, _ResourceId)
+16:48:28                      | summarize ControlPlaneCount = count() by ClusterName
+16:48:28                  )
+16:48:28                  | summarize
+16:48:28                      AuditCount = sum(AuditCount),
+16:48:28                      ControlPlaneCount = sum(ControlPlaneCount),
+16:48:28                      TotalLogCount = sum(AuditCount + ControlPlaneCount)
+16:48:28                      by ClusterName
+16:48:28                  | where TotalLogCount < MinEvents
+16:48:28                  | project ClusterName, AuditCount, ControlPlaneCount, TotalLogCount
+16:48:28              EOT
+16:48:28              # (5 unchanged attributes hidden)
+16:48:28  
+16:48:28              # (1 unchanged block hidden)
+16:48:28          }
+16:48:28  
+16:48:28          # (1 unchanged block hidden)
+16:48:28      }
+16:48:28  
+16:48:28  Plan: 0 to add, 1 to change, 0 to destroy.
+16:48:30  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.aks_log_forwarding_failure: Modifying... [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/AKS Audit Log Forwarding Failure]
+16:48:33  module.alerts.azurerm_monitor_scheduled_query_rules_alert_v2.aks_log_forwarding_failure: Modifications complete after 4s [id=/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Insights/scheduledQueryRules/AKS Audit Log Forwarding Failure]
+16:48:33  
+16:48:33  Warnings:
+16:48:33  
+16:48:33  - Value for undeclared variable
+16:48:33  - Value for undeclared variable
+16:48:33  - Values for undeclared variables
+16:48:33  - Argument is deprecated
+16:48:33    on aaa.tf line 2 (and 4 more)
+16:48:33  
+16:48:33  To see the full warning notes, run Terraform without -compact-warnings.
+16:48:34  
+16:48:34  Apply complete! Resources: 0 added, 1 changed, 0 destroyed.
+16:48:34  
+16:48:34  Outputs:
+16:48:34  
+16:48:34  acr_public = false
+16:48:34  acr_vnet_link_subnet_ids = "/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Network/virtualNetworks/VNet-GovVirginia-ANR/subnets/AKS-ANR"
+16:48:34  core_key_vault_name = "DEJOMSMVPWIL5KV"
+16:48:34  create_c1_guardrails = false
+16:48:34  drift_storage_container_name = "drift"
+16:48:34  global_storage_account_name = "gvjomsmvpglobaliil5glb"
+16:48:34  invoke_runbook_post_acr_private_link = "0"
+16:48:34  k8s_credentials_alert_container_name = "k8s-credentials-alert"
+16:48:34  k8s_tls_alert_container_name = "k8s-tls-alert"
+16:48:34  oscap_image_scans_container_name = "oscap-image-scans"
+16:48:34  vnet_map_to_acr_private_ips = {
+16:48:34    "/subscriptions/8a1a90fa-f5b0-47dc-9d51-1cfadd2aa445/resourceGroups/RG-GovVirginia-ANR/providers/Microsoft.Network/virtualNetworks/VNet-GovVirginia-ANR" = {
+16:48:34      "acr_data_private_ip" = "0.0.0.0"
+16:48:34      "acr_repo_private_ip" = "0.0.0.0"
+16:48:34    }
+16:48:34  }
+16:48:34  Terraform executed successfully.
+16:48:34  [Pipeline] script
+16:48:34  [Pipeline] {
+16:48:34  [Pipeline] powershell
+16:48:36  Capturing Terraform outputs from global module...
+16:48:38    ## 'aks_cluster_name' not present in outputs â€” skipping.
+16:48:38    ## 'aks_resource_group_name' not present in outputs â€” skipping.
+16:48:38    ## 'key_vault_name' not present in outputs â€” skipping.
+16:48:38  Terraform output capture complete.
+16:48:38  [Pipeline] powershell
+16:48:40  Method invocation failed because [System.Boolean] does not contain a method named 'Replace'.
+16:48:40  At C:\Agent\workspace\Prod-Test\Sandbox\Faith\Execute-Terraform@tmp\durable-85e63fc3\powershellScript.ps1:1 char:1
+16:48:40  + ((Get-Content tf-outputs.env) -match "^TF_AKS_CLUSTER_NAME=")[0].Repl ...
+16:48:40  + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+16:48:40      + CategoryInfo          : InvalidOperation: (:) [], RuntimeException
+16:48:40      + FullyQualifiedErrorId : MethodNotFound
+16:48:40   
+16:48:40  
+16:48:40  [Pipeline] }
+16:48:40  [Pipeline] // script
+16:48:40  [Pipeline] }
+16:48:40  [Pipeline] // withCredentials
+16:48:40  [Pipeline] }
+16:48:40  [Pipeline] // withCredentials
+16:48:40  [Pipeline] }
+16:48:40  [Pipeline] // stage
+16:48:40  [Pipeline] stage
+16:48:40  [Pipeline] { (K8s Credential Rotation)
+16:48:40  Stage "K8s Credential Rotation" skipped due to earlier failure(s)
+16:48:40  [Pipeline] getContext
+16:48:40  [Pipeline] }
+16:48:40  [Pipeline] // stage
+16:48:40  [Pipeline] }
+16:48:40  [Pipeline] // timestamps
+16:48:40  [Pipeline] }
+16:48:40  [Pipeline] // withEnv
+16:48:40  [Pipeline] }
+16:48:40  [Pipeline] // withCredentials
+16:48:40  [Pipeline] }
+16:48:40  [Pipeline] // node
+16:48:40  [Pipeline] End of Pipeline
+16:48:40  ERROR: script returned exit code 1
+16:48:40  Finished: FAILURE
