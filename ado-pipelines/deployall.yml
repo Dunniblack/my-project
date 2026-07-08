@@ -1,0 +1,119 @@
+appendCommitMessageToRunName: false
+
+trigger: none
+
+pool:
+  name: AFMC-JOMSMVP
+
+parameters:
+- name: TF_Action
+  displayName: The Terraform Action to Execute
+  type: string
+  default: plan
+  values:
+  - plan
+  - apply
+  - show
+- name: TF_Workspace
+  displayName: The Terraform Workspace
+  type: string
+  default: MVP
+- name: TF_Vars
+  displayName: (Optional) Additional Terraform Variables
+  type: string
+  default: ' '
+
+variables:
+- group: AFMC-JOMSMVP-KVT
+- name: ARM_CLIENT_ID
+  value: $(spAppId)
+- name: ARM_CLIENT_SECRET
+  value: $(spAppKey)
+- name: ARM_ACCESS_KEY
+  value: $(container-access-key-1)
+- name: ARM_TENANT_ID
+  value: $(tenant-id)
+- name: ARM_ENVIRONMENT
+  value: 'usgovernment'
+- name: TFSTATE_CONTAINER
+  value: $(tfstate-container)
+- name: TFSTATE_STORAGE_ACCOUNT
+  value: $(tfstate-storage-account)
+- name: TFSTATE_RESOURCE_GROUP
+  value: $(tfstate-resource-group)
+- name: FUNC_AREA
+  value: 'AFMC'
+- name: PROJECT
+  value: 'JOMS'
+- name: C1_PROJECT
+  value: '$(PROJECT)MVP'
+- name: METADATA_HOST
+  value: 'management.usgovcloudapi.net'
+- name: DEPLOY_FLAGS
+  value: >-
+    TF_VAR_deploy_traefik=true
+     TF_VAR_deploy_keycloak=true
+     TF_VAR_deploy_argocd=true
+     TF_VAR_deploy_alloy=true
+     TF_VAR_deploy_grafana=true
+     TF_VAR_deploy_twistlock=true
+     TF_VAR_deploy_rancher=true
+     TF_VAR_deploy_mission_planner=true
+
+stages:
+  - template: templates/gather-dynamic-vars.yml
+    parameters:
+      BuildName: 'Deploy-All, TF Action ${{ parameters.TF_Action }}, Workspace ${{ parameters.TF_Workspace }}'
+  - template: templates/execute-terraform.yml
+    parameters:
+      Stage_Title: 'infrastructure_1'
+      TF_Module: infrastructure
+      TF_Action: ${{ parameters.TF_Action }}
+      TF_Workspace: ${{ parameters.TF_Workspace }}
+      TF_Vars: ${{ parameters.TF_Vars }}
+  - template: templates/execute-terraform.yml
+    parameters:
+      Stage_Title: 'infrastructure_2'
+      TF_Module: infrastructure
+      TF_Action: ${{ parameters.TF_Action }}
+      TF_Workspace: ${{ parameters.TF_Workspace }}
+      TF_Vars: ${{ parameters.TF_Vars }}
+      Generate_Certs: true
+      Depends_On_Stage:
+        - variables
+        - 'Execute_TF_infrastructure_1'
+  - template: templates/execute-terraform.yml
+    parameters:
+      Stage_Title: 'software_1'
+      TF_Module: software
+      TF_Action: ${{ parameters.TF_Action }}
+      TF_Workspace: ${{ parameters.TF_Workspace }}
+      TF_Vars: ${{ parameters.TF_Vars }}
+      Depends_On_Stage:
+        - variables
+        - 'Execute_TF_infrastructure_2'
+  - template: templates/execute-terraform.yml
+    parameters:
+      Stage_Title: 'software_2'
+      TF_Module: software
+      TF_Action: ${{ parameters.TF_Action }}
+      TF_Workspace: ${{ parameters.TF_Workspace }}
+      TF_Vars: ${{ parameters.TF_Vars }}
+      Post_PS_Scripts: 'terraform/Verify-KyvernoPolicies.ps1'
+      Depends_On_Stage:
+        - variables
+        - 'Execute_TF_software_1'
+  - template: templates/execute-terraform.yml
+    parameters:
+      Stage_Title: 'software_3'
+      TF_Module: software
+      TF_Action: ${{ parameters.TF_Action }}
+      TF_Workspace: ${{ parameters.TF_Workspace }}
+      TF_Vars: "$(DEPLOY_FLAGS) ${{ parameters.TF_Vars }}"
+      Post_PS_Scripts: 'terraform/Verify-AllArgoApps.ps1'
+      Depends_On_Stage:
+        - variables
+        - 'Execute_TF_software_2'
+  - template: templates/cleanup.yml
+    parameters:
+      Depends_On_Stage: 'Execute_TF_software_3'
