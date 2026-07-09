@@ -1,0 +1,349 @@
+{{- if (.Values.tags).kyverno }}
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+  name: allow-namespace-labels
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "update", "patch"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+  name: allow-namespace-labels
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: allow-namespace-labels
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: argocd
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
+  name: kyverno
+  namespace: {{ (.Values.clusters.core).namespace }}
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - list:
+      elements:
+        - server: {{ (.Values.clusters.core).server }}
+          name: {{ (.Values.clusters.core).nameSuffix }}
+          helmRepoURL: {{ (.Values.kyverno).helmRepoURL |
+                          default (.Values.global).helmRepoURLOverride |
+                          default (.Values.global).helmRepoURLDefault |
+                          default "https://kyverno.github.io/kyverno" }}
+          helmVersion: {{ (.Values.kyverno).helmVersion }}
+          clusterBaseResourcesHelmRepoURL: {{ (.Values.global.clusterBaseResources).helmRepoURL |
+                                              default (.Values.global).helmRepoURLOverride |
+                                              default (.Values.global).helmRepoURLDefault }}
+          clusterBaseResourcesHelmVersion: {{ (.Values.global.clusterBaseResources).helmVersion }}
+          policiesHelmVersion: {{ (.Values.kyverno).policiesHelmVersion }}
+          releaseName: {{ (.Values.clusters.core).release }}
+          dockerRegistry: {{ (.Values.kyverno).dockerRegistry }}
+          dockerVersion: {{ (.Values.kyverno).dockerVersion }}
+          kubectlDockerRepo: {{ (.Values.kyverno.kubectl).dockerRepo }}
+          kubectlDockerVersion: {{ (.Values.kyverno.kubectl).dockerVersion }}
+  template:
+    metadata:
+      name: kyverno-{{`{{ .name }}`}}
+    spec:
+      project: {{ (.Values.clusters.core).project }}
+      sources:
+      - chart: kyverno
+        repoURL: "{{`{{ .helmRepoURL }}`}}"
+        targetRevision: "{{`{{ .helmVersion }}`}}"
+        helm:
+          releaseName: '{{`{{ .releaseName }}`}}'
+          parameters:
+            - name: crds.migration.enabled
+              value: 'false'
+          values: |-
+            image: &kyverno-kubectl
+              registry: {{`{{ .dockerRegistry }}`}}
+              repository: {{`{{ .kubectlDockerRepo }}`}}
+              tag: {{`{{ .kubectlDockerVersion }}`}}
+            nodeAffinity: &noms-system-affinity
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                  - key: noms/system
+                    operator: In
+                    values:
+                    - cluster-base
+            admissionController:
+              nodeAffinity: *noms-system-affinity
+              initContainer:
+                image:
+                  repository: kyvernopre
+                  tag: {{`{{ .dockerVersion }}`}}
+              container:
+                image:
+                  repository: kyverno
+                  tag: {{`{{ .dockerVersion }}`}}
+                resources:
+                  limits:
+                    cpu: 200m
+              rbac:
+                clusterRole:
+                  extraResources:
+                  - apiGroups:
+                    - ''
+                    resources:
+                    - secrets
+                    verbs:
+                    - get
+                    - list
+                  - apiGroups:
+                    - cilium.io
+                    resources:
+                    - ciliumnetworkpolicies
+                    verbs:
+                    - get
+                    - list
+                  - apiGroups:
+                    - ''
+                    resources:
+                    - serviceaccounts
+                    verbs:
+                    - update
+                    - get
+                    - list
+            backgroundController:
+              nodeAffinity: *noms-system-affinity
+              image:
+                repository: background-controller
+                tag: {{`{{ .dockerVersion }}`}}
+              resources:
+                limits:
+                  cpu: 250m
+              rbac:
+                clusterRole:
+                  extraResources:
+                  - apiGroups:
+                    - ''
+                    resources:
+                    - secrets
+                    verbs:
+                    - get
+                    - list
+                    - create
+                    - update
+                    - delete
+                  - apiGroups:
+                    - ''
+                    resources:
+                    - serviceaccounts
+                    verbs:
+                    - update
+                    - get
+                    - list
+            cleanupController:
+              nodeAffinity: *noms-system-affinity
+              image:
+                repository: cleanup-controller
+                tag: {{`{{ .dockerVersion }}`}}
+              resources:
+                limits:
+                  cpu: 250m
+            crds:
+              migration:
+                image:
+                  repository: kyvernocli
+                  tag: {{`{{ .dockerVersion }}`}}
+            reportsController:
+              nodeAffinity: *noms-system-affinity
+              image:
+                repository: reports-controller
+                tag: {{`{{ .dockerVersion }}`}}
+              resources:
+                limits:
+                  cpu: 250m
+                  memory: 512Mi
+            webhooksCleanup:
+              enabled: true
+              image: *kyverno-kubectl
+            global:
+            {{- if .Values.global.dockerRegistryCredentials }}
+              imagePullSecrets:
+              - name: "{{ .Values.global.dockerRegistryCredentials }}"
+            {{- end }}
+              image:
+                registry: {{`{{ .dockerRegistry }}`}}
+              tolerations:
+              - key: noms/system
+                operator: Equal
+                value: cluster-base
+                effect: NoSchedule
+            features:
+              policyExceptions:
+                enabled: true
+                namespace: "*"
+      - chart: kyverno-policies
+        repoURL: "{{`{{ .helmRepoURL }}`}}"
+        targetRevision: "{{`{{ .policiesHelmVersion }}`}}"
+        helm:
+          releaseName: '{{`{{ .releaseName }}`}}'
+          values: |-
+            allowedImageRegistries:
+            {{- range ( split "," (.Values.kyverno).allowedImageRegistries ) }}
+              - {{ . }}
+            {{- end }}
+          {{- if .Values.grafana.localAdmin.enabled }}
+            grafanaLocalAdminEnabled: true
+          {{- end }}
+          {{- if .Values.global.dockerRegistryCredentials }}
+            policy:
+              mutateServiceAccounts: true
+          {{- end }}
+      - chart: cluster-base-resources
+        repoURL: "{{`{{ .clusterBaseResourcesHelmRepoURL }}`}}"
+        targetRevision: "{{`{{ .clusterBaseResourcesHelmVersion }}`}}"
+        helm:
+          releaseName: '{{`{{ .releaseName }}`}}'
+          skipCrds: true
+          values: |-
+            networkPolicies:
+            - name: '{{`{{ .releaseName }}`}}-kyverno-dns'
+              ciliumNetworkPolicy: true
+              spec:
+                endpointSelector:
+                  matchLabels: {}
+                egress:
+                - toEndpoints:
+                  - matchLabels:
+                      "k8s:k8s-app": kube-dns
+                      "k8s:io.kubernetes.pod.namespace": kube-system
+                  toPorts:
+                  - ports:
+                    - port: "53"
+                      protocol: UDP
+            - name: '{{`{{ .releaseName }}`}}-kyverno'
+              ciliumNetworkPolicy: true
+              spec:
+                endpointSelector:
+                  matchLabels: {}
+                egress:
+                - toCIDRSet:
+                  - cidr: {{ .Values.kyverno.allowedImageRegistryIp }}/32
+                  toPorts:
+                  - ports:
+                    - port: "443"
+                      protocol: TCP
+                - toEntities:
+                  - kube-apiserver
+                  toPorts:
+                  - ports:
+                    - port: "443"
+                      protocol: TCP
+                - toEndpoints:
+                  - matchLabels:
+                      "k8s:app.kubernetes.io/part-of": core-app-kyverno
+                      "k8s:io.kubernetes.pod.namespace": kyverno
+                ingress:
+                - fromEntities:
+                  - kube-apiserver
+                  - cluster
+                  toPorts:
+                  - ports:
+                    - port: "9443"
+                      protocol: TCP
+                - fromEndpoints:
+                  - matchLabels:
+                      "k8s:app.kubernetes.io/part-of": core-app-kyverno
+                      "k8s:io.kubernetes.pod.namespace": kyverno
+      destination:
+        server: '{{`{{ .server }}`}}'
+        namespace: kyverno
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - Replace=true
+# We need to add labels to namespaces to sync the image-pull-credentials/secrets across namespaces
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: label-core-app-namespace
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  template:
+    spec:
+      containers:
+      - name: label-core-app-namespace
+        image: {{ ($.Values.kyverno).dockerRegistry }}/{{ ($.Values.kyverno.kubectl).dockerRepo }}:{{ ($.Values.kyverno.kubectl).dockerVersion }}
+        command: ["sh", "-c", "sleep 180 && kubectl label --overwrite namespace --selector=core-app=yes core-app=true"]
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 256Mi
+            cpu: 200m
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+      restartPolicy: Never
+    {{- if $.Values.global.dockerRegistryCredentials }}
+      imagePullSecrets:
+      - name: "{{ $.Values.global.dockerRegistryCredentials }}"
+    {{- end }}
+  backoffLimit: 0
+{{- range $namespace := .Values.global.namespaces }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: label-tool-name-namespace-{{ $namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  template:
+    spec:
+      containers:
+      - name: label-tool-name-namespace-{{ $namespace }}
+        image: {{ ($.Values.kyverno).dockerRegistry }}/{{ ($.Values.kyverno.kubectl).dockerRepo }}:{{ ($.Values.kyverno.kubectl).dockerVersion }}
+        command: ["kubectl", "label", "--overwrite", "namespace", "{{ $namespace }}", "{{ $namespace }}=true"]
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 256Mi
+            cpu: 200m
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+      restartPolicy: Never
+    {{- if $.Values.global.dockerRegistryCredentials }}
+      imagePullSecrets:
+      - name: "{{ $.Values.global.dockerRegistryCredentials }}"
+    {{- end }}
+  backoffLimit: 0
+{{- end }}
+{{- end }}
