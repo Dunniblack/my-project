@@ -1,0 +1,28 @@
+Fetching AKS cluster list from subscription...
+Found 1 AKS cluster(s) in subscription; 1 match pattern '^AKSJOMS[A-Za-z]{4}GV01$'.
+
+--- Checking Cluster: AKSJOMSMVPDGV01 in RG: AZ-GV-DOD-AF-CCE-AFMC-D-IL5-JOMSMVP-AKS-RGP-01 ---
+  Using Key Vault: GVJOMSMVPDIL5KV0001
+WARNING: Merged "AKSJOMSMVPDGV01" as current context in C:\Windows\ServiceProfiles\NetworkService\.kube\config
+WARNING: Converted kubeconfig to use Azure CLI authentication.
+ERROR: (SecretNotFound) A secret with (name/id) rancher-admin-password was not found in this key vault. If you recently deleted this secret you may be able to recover it using the correct recovery command. For help resolving this issue, please see https://go.microsoft.com/fwlink/?linkid=2125182
+Code: SecretNotFound
+Message: A secret with (name/id) rancher-admin-password was not found in this key vault. If you recently deleted this secret you may be able to recover it using the correct recovery command. For help resolving this issue, please see https://go.microsoft.com/fwlink/?linkid=2125182
+  [INFO] rancher-admin-password not found in KV GVJOMSMVPDIL5KV0001. Checking initial deployment age via kubectl...
+  Secret: rancher-admin-password | Age: 8 Days | Source: Cluster Deployment (core-app-rancher)
+  Secret: argocd-admin-password | Age: 12 Days | Source: Azure Key Vault
+ERROR: (SecretNotFound) A secret with (name/id) keycloak-admin-password was not found in this key vault. If you recently deleted this secret you may be able to recover it using the correct recovery command. For help resolving this issue, please see https://go.microsoft.com/fwlink/?linkid=2125182
+Code: SecretNotFound
+Message: A secret with (name/id) keycloak-admin-password was not found in this key vault. If you recently deleted this secret you may be able to recover it using the correct recovery command. For help resolving this issue, please see https://go.microsoft.com/fwlink/?linkid=2125182
+  [INFO] keycloak-admin-password not found in KV GVJOMSMVPDIL5KV0001. Checking initial deployment age via kubectl...
+Error from server (NotFound): namespaces "keycloak" not found
+WARNING:   [WARN] Failed to query kubectl for 'core-app-keycloak' in namespace 'keycloak'. Is the tool deployed?
+  All tracked credentials within threshold for cluster AKSJOMSMVPDGV01.
+
+==========================================
+Credential expiry monitoring completed.
+Clusters scanned : 1
+Clusters failed  : 0
+Total findings   : 0
+==========================================
+Finishing: Run Credential Expiry Monitor
