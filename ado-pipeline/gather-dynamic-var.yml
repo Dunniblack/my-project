@@ -1,0 +1,69 @@
+parameters:
+  - name: SetBuildName
+    type: boolean
+    default: true
+  - name: BuildName
+    type: string
+    default: ''
+
+stages:
+  # Stage 0: Gather Dynamic Variables
+  - stage: variables
+    displayName: 'Gather Dynamic Variables'
+    jobs:
+      - job: get
+        displayName: 'Resolve Dynamic Variables'
+        steps:
+          # Step 0: Get Azure DevOps Agent Name
+          - powershell: >
+              echo "##vso[task.setvariable variable=AgentName;isoutput=true]$(Agent.Name)"
+            name: ado
+            displayName: 'Get Azure DevOps Agent Name'
+          # Step 1: Get Stage from URI
+          - powershell: |
+              $Stage = (echo $env:BUILD_REPOSITORY_URI).Split('.')[1]
+              echo "##vso[task.setvariable variable=stage;isOutput=true]$Stage"
+              $RootDomain = "$Stage.cce.af.mil"
+              if($Stage -eq 'prod') {
+                $RootDomain = "cce.af.mil"
+              }
+              echo "##vso[task.setvariable variable=root_domain;isOutput=true]$RootDomain"
+            name: c1
+            displayName: 'Get Stage from URI'
+          # Step 2: Azure CLI Login
+          - powershell: |
+              scripts/ps/functions/Login-AzCli.ps1 `
+                -ARM_CLIENT_ID '$(ARM_CLIENT_ID)' `
+                -ARM_CLIENT_SECRET '$(ARM_CLIENT_SECRET)' `
+                -ARM_TENANT_ID '$(ARM_TENANT_ID)' `
+                -POWERSHELL_LOGIN $True
+            displayName: 'Azure CLI Login and Set Subscription'
+          # Step 3: Get Subscription ID from the Azure CLI
+          - powershell: >
+              echo "##vso[task.setvariable variable=subscription_id;isOutput=true]
+              $(az account list --query '[0].id' --output tsv)"
+            name: az
+            displayName: 'Get Subscription from Azure CLI'
+          # Step 4: Get Version Numbers
+          - powershell: |
+              ((Get-Content scripts/sh/metadata/versions.sh) -match '=') | `
+                ForEach-Object {
+                  $KeyValue = (($_ -split 'export')[-1]).Trim()
+                  $KeyValue = $KeyValue.Split('=')
+                  echo "##vso[task.setvariable variable=$($KeyValue[0]);isoutput=true]$($KeyValue[1])"
+                }
+            name: version
+            displayName: 'Get Version Numbers'
+      
+      - job: SetBuildNameJob
+        displayName: 'Set Build Name'
+        condition: eq('${{ parameters.SetBuildName }}', 'true')
+        dependsOn: get
+        steps:
+          - task: PowerShell@2
+            displayName: 'Update Build Name'
+            inputs:
+              targetType: 'inline'
+              script: |
+                $buildName = "${{ parameters.BuildName }}"
+                Write-Host "##vso[build.updatebuildnumber]$buildName"
