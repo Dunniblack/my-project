@@ -68,15 +68,7 @@ parameters:
     displayName: Regex applied to AKS cluster names (only matching clusters are scanned)
     type: string
     default: '^AKSJOMS[A-Za-z]{4}GV01$'
-  - name: Tls_Expiry_Threshold_Days
-    displayName: TLS - flag certs expiring within N days
-    # type: int
-    default: 30
-  - name: Credential_Warning_Threshold_Days
-    displayName: Credentials - warn at N days old (60 = STIG hard limit)
-    # type: int
-    default: 55
-
+    
 variables:
   - group: AFMC-JOMSMVP-KVT
   - name: ARM_CLIENT_ID
@@ -237,7 +229,6 @@ stages:
                 & "$(Build.SourcesDirectory)/scripts/ps/cert/Check-K8s-Tls-Cert.ps1" `
                   -StorageAccountName "$(GlobalStorageAcct)" `
                   -ContainerName "$(TlsAlertContainer)" `
-                  -ExpiryThresholdDays ${{ parameters.Tls_Expiry_Threshold_Days }} `
                   -ClusterNamePattern '${{ parameters.Cluster_Name_Pattern }}'
               displayName: 'Run TLS Certificate Expiry Monitor'
 
@@ -248,8 +239,7 @@ stages:
                 & "$(Build.SourcesDirectory)/scripts/ps/credentials/check-k8s-credentials-expiry.ps1" `
                   -StorageAccountName "$(GlobalStorageAcct)" `
                   -ContainerName "$(CredAlertContainer)" `
-                  -ClusterNamePattern '${{ parameters.Cluster_Name_Pattern }}' `
-                  -WarningThresholdDays ${{ parameters.Credential_Warning_Threshold_Days }}
+                  -ClusterNamePattern '${{ parameters.Cluster_Name_Pattern }}'
               displayName: 'Run Credential Expiry Monitor'
 
   # 3. Post-execution node/workspace cleanup
