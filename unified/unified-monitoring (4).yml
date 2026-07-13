@@ -1,0 +1,310 @@
+# =============================================================================
+# Unified K8s Monitoring Pipeline (TLS Certificate Expiry + Credential Expiry)
+# =============================================================================
+#
+# Replaces the two nightly pipelines:
+#   - check-k8s-tls-cert-expiry.yml
+#   - check-k8s-credentials-expiry.yml
+#
+# WHY UNIFIED
+#   - Both checks need the same Artifactory tooling (kubectl, kubelogin,
+#     terraform) and the same Terraform init/output retrieval. Running them
+#     in one job cuts tooling download + terraform init from 2x/night to 1x.
+#   - Both scripts do their own AKS cluster discovery via `az aks list`
+#     + regex, so the YAML does not need to know cluster names.
+#
+# ARCHITECTURAL DECISIONS (read before editing)
+#
+#   1. THRESHOLDS ARE FIXED CONSTANTS INSIDE THE SCRIPTS.
+#      Azure DevOps Server's parameter schema does not support type: int
+#      (only string/boolean/object + step/stage/job list types). Exposing
+#      the thresholds as strings would let a typo'd manual run silently
+#      disable alerts. So both thresholds are STATIC CONSTANTS defined
+#      inside the scripts themselves:
+#        - TLS:         30 days  (Check-K8s-Tls-Cert.ps1: $ExpiryThresholdDays)
+#        - Credentials: 55 days  (Check-K8s-Credentials-Expiry.ps1: $WarningThresholdDays)
+#                      (STIG 60-day hard limit; 55 = 5-day lead time)
+#      To change a threshold, edit the script's constant declaration.
+#      Do NOT re-introduce pipeline parameters for these.
+#
+#   2. STORAGE AUTH IS ALWAYS --auth-mode login. NO KEY-BASED AUTH.
+#      Both scripts use `az storage blob upload --auth-mode login` for
+#      uploading alert blobs. The SP must have "Storage Blob Data
+#      Contributor" RBAC on the global storage account.
+#      The old per-purpose storage-key variables (k8s-tls-alert-container-key,
+#      k8s-credentials-alert-container-key) have been removed — they are no
+#      longer referenced anywhere in this pipeline or in either script.
+#      If you need to revoke a key, do so in Azure — it won't break this
+#      pipeline because the pipeline never reads it.
+#
+#   3. AZ CLI AUTH IS RE-ESTABLISHED AT THE START OF THE MONITORING JOB.
+#      The gather-dynamic-vars stage does `az login` once. On self-hosted
+#      agents, that token cache persists across jobs in ~/.azure/. However,
+#      to be fully defensive (agent restarts, cache clears, etc.), we
+#      re-run Login-AzCli.ps1 at the start of the monitoring job. This is
+#      idempotent (~1 second) and makes the auth dependency explicit in
+#      the pipeline logs rather than implicit.
+#
+#   4. Terraform is initialized ONLY on the `global` module. The only TF
+#      outputs read are: global_storage_account_name,
+#      k8s_tls_alert_container_name, k8s_credentials_alert_container_name.
+#      DO NOT try to read aks_cluster_name / aks_resource_group_name from
+#      terraform state here - those are infrastructure-module outputs and
+#      will throw PropertyNotFoundStrict.
+#
+#   5. Cluster discovery is delegated to the scripts. Both scripts run
+#      `az aks list` and filter by -ClusterNamePattern.
+#        - The credentials script REQUIRES -ClusterNamePattern (default
+#          ^AKSJOMS[A-Za-z]{4}GV01$). It extracts the 4-letter workspace
+#          ID from the cluster name and uses it to locate the matching
+#          GVJOMS{workspaceId}* Key Vault in the cluster's RG.
+#        - The TLS script ACCEPTS -ClusterNamePattern as optional. When
+#          omitted (isolated pipeline case) it scans every cluster; when
+#          passed (unified pipeline case) it filters by the regex.
+#
+#   6. KEY VAULT DISCOVERY (credentials script only):
+#      For a cluster named AKSJOMSMVPDGV01, the 4-letter workspace ID is
+#      "MVPD" (chars 8-11). The matching KV name starts with "GVJOMSMVPD"
+#      (e.g. GVJOMSMVPDIL5KV0001). The script uses `starts_with(name,
+#      'GVJOMS{workspaceId}')` to find it. This is more precise than the
+#      old `starts_with(name, 'GVJOMS')` which would match the wrong KV
+#      when multiple clusters share a resource group.
+#
+#   7. Per-cluster failures are caught inside each script and logged; the
+#      script exits non-zero only if at least one cluster could not be
+#      scanned. Finding an expiring cert/credential is NOT a failure - it
+#      triggers an alert via blob upload.
+# =============================================================================
+
+trigger: none
+
+schedules:
+  - cron: "0 0 * * *"
+    displayName: Daily Midnight Unified K8s Monitoring
+    branches:
+      include:
+        - main
+    always: true
+
+pool:
+  name: AFMC-JOMSMVP
+
+parameters:
+  - name: Run_Tls_Check
+    displayName: Run TLS certificate expiry check?
+    type: boolean
+    default: true
+  - name: Run_Credentials_Check
+    displayName: Run credential expiry check?
+    type: boolean
+    default: true
+  - name: Cluster_Name_Pattern
+    displayName: Regex applied to AKS cluster names (only matching clusters are scanned)
+    type: string
+    default: '^AKSJOMS[A-Za-z]{4}GV01$'
+
+variables:
+  - group: AFMC-JOMSMVP-KVT
+  - name: ARM_CLIENT_ID
+    value: $(spAppId)
+  - name: ARM_CLIENT_SECRET
+    value: $(spAppKey)
+  - name: ARM_ACCESS_KEY
+    value: $(container-access-key-1)
+  - name: ARM_TENANT_ID
+    value: $(tenant-id)
+  - name: ARM_ENVIRONMENT
+    value: 'usgovernment'
+  - name: TFSTATE_CONTAINER
+    value: $(tfstate-container)
+  - name: TFSTATE_STORAGE_ACCOUNT
+    value: $(tfstate-storage-account)
+  - name: TFSTATE_RESOURCE_GROUP
+    value: $(tfstate-resource-group)
+  - name: FUNC_AREA
+    value: 'AFMC'
+  - name: PROJECT
+    value: 'JOMS'
+  - name: C1_PROJECT
+    value: '$(PROJECT)MVP'
+  - name: METADATA_HOST
+    value: 'management.usgovcloudapi.net'
+  # NOTE: Storage-account key variables have been REMOVED. Both scripts now
+  # use --auth-mode login for blob uploads. The SP must have "Storage Blob
+  # Data Contributor" RBAC on the global storage account. See architectural
+  # decision #2 above.
+
+stages:
+  # 1. Gather dynamic vars -- resolves stage, agent name, versions, and initial Azure CLI auth
+  - template: templates/gather-dynamic-vars.yml
+    parameters:
+      BuildName: 'Unified K8s Monitoring (TLS + Credentials)'
+
+  # 2. Unified monitoring stage -- one job, sequential checks
+  - stage: UnifiedK8sMonitoring
+    displayName: 'Unified K8s Monitoring'
+    dependsOn:
+      - variables
+    variables:
+      stage: $[ stageDependencies.variables.get.outputs['c1.stage'] ]
+      ado_agent_name: $[ stageDependencies.variables.get.outputs['ado.AgentName'] ]
+      kubectl_version: $[ stageDependencies.variables.get.outputs['version.KUBECTL_VERSION'] ]
+      kubelogin_version: $[ stageDependencies.variables.get.outputs['version.KUBELOGIN_VERSION'] ]
+      terraform_version: $[ stageDependencies.variables.get.outputs['version.TERRAFORM_VERSION'] ]
+    pool:
+      demands:
+        - Agent.Name -equals $(ado_agent_name)
+    jobs:
+      - job: RunUnifiedMonitoring
+        displayName: 'Run Unified K8s Monitoring'
+        steps:
+
+          # ---- Step 0: Re-establish Azure CLI auth context ----
+          # The gather-dynamic-vars stage already did `az login`, and on
+          # self-hosted agents the token cache persists across jobs. But
+          # we re-run Login-AzCli.ps1 here as a defensive measure so the
+          # auth dependency is explicit and robust against cache clears.
+          # This is idempotent (~1 second) and ensures all downstream
+          # az cli calls (aks list, keyvault list, keyvault secret show,
+          # storage blob upload --auth-mode login) have a valid token.
+          - powershell: |
+              scripts/ps/functions/Login-AzCli.ps1 `
+                -ARM_CLIENT_ID '$(ARM_CLIENT_ID)' `
+                -ARM_CLIENT_SECRET '$(ARM_CLIENT_SECRET)' `
+                -ARM_TENANT_ID '$(ARM_TENANT_ID)' `
+                -POWERSHELL_LOGIN $True
+              Write-Host "Azure CLI auth context established. Verifying..."
+              $null = az account show --query "[0].name" -o tsv
+              Write-Host "Active subscription: $(az account show --query '[0].name' -o tsv)"
+            displayName: 'Establish Azure CLI Auth Context'
+
+          # ---- Step 1: Download kubectl from Artifactory ----
+          - powershell: |
+              $stage = "$(stage)".Trim()
+              scripts/ps/functions/Download-Artifactory.ps1 `
+                -ArtifactSource 'IaC/software/win-amd64/kubectl-$(kubectl_version).exe' `
+                -ArtifactDestination "$(Pipeline.Workspace)\kubectl.exe" `
+                -Stage $stage `
+                -ArtRepo "$(FUNC_AREA)-$(C1_PROJECT)-$($stage.ToUpper())" `
+                -ArtUsername '$(artifactoryUser)' `
+                -ArtPassword '$(artifactorySecret)'
+            displayName: 'Download kubectl from Artifactory'
+
+          # ---- Step 2: Download kubelogin from Artifactory ----
+          - powershell: |
+              $stage = "$(stage)".Trim()
+              scripts/ps/functions/Download-Artifactory.ps1 `
+                -ArtifactSource 'IaC/software/win-amd64/kubelogin-$(kubelogin_version).exe' `
+                -ArtifactDestination "$(Pipeline.Workspace)\kubelogin.exe" `
+                -Stage $stage `
+                -ArtRepo "$(FUNC_AREA)-$(C1_PROJECT)-$($stage.ToUpper())" `
+                -ArtUsername '$(artifactoryUser)' `
+                -ArtPassword '$(artifactorySecret)'
+            displayName: 'Download kubelogin from Artifactory'
+
+          # ---- Step 3: Download and extract Terraform from Artifactory ----
+          - powershell: |
+              $stage = "$(stage)".Trim()
+              scripts/ps/functions/Download-Artifactory.ps1 `
+                -ArtifactSource 'IaC/software/win-amd64/terraform-bundle-$(terraform_version).zip' `
+                -ArtifactDestination "$(Pipeline.Workspace)\terraform-bundle.zip" `
+                -Stage $stage `
+                -ArtRepo "$(FUNC_AREA)-$(C1_PROJECT)-$($stage.ToUpper())" `
+                -ArtUsername '$(artifactoryUser)' `
+                -ArtPassword '$(artifactorySecret)'
+              scripts/ps/functions/Extract-Archive.ps1 `
+                -Archive "$(Pipeline.Workspace)\terraform-bundle.zip" `
+                -Destination "$(Pipeline.Workspace)" `
+                -VerifyFile "terraform.exe"
+            displayName: 'Download and extract Terraform from Artifactory'
+
+          # ---- Step 4: Add tools to PATH ----
+          - powershell: |
+              echo "##vso[task.prependpath]$(Pipeline.Workspace)"
+            displayName: 'Add tools to PATH'
+
+          # ---- Step 5: Initialize Terraform (single init for the entire pipeline) ----
+          - powershell: |
+              scripts/ps/terraform/Init-Terraform.ps1 `
+                -TfModule 'global' `
+                -TfWorkspace 'Global' `
+                -BinDir '$(Pipeline.Workspace)' `
+                -TfStateResourceGroup '$(TFSTATE_RESOURCE_GROUP)' `
+                -TfStateStorageAccount '$(TFSTATE_STORAGE_ACCOUNT)' `
+                -TfStateContainer '$(TFSTATE_CONTAINER)' `
+                -ArmAccessKey '$(ARM_ACCESS_KEY)' `
+                -MetadataHost '$(METADATA_HOST)'
+            displayName: 'Initialize Terraform'
+
+          # ---- Step 6: Retrieve Terraform outputs (storage account + both alert containers) ----
+          - powershell: |
+              . "$(Build.SourcesDirectory)/scripts/ps/functions/CommonUtilities.ps1"
+              $ErrorActionPreference = "Stop"
+              Set-Location "$(Build.SourcesDirectory)/terraform/global"
+
+              $tfOutputJson = Exec terraform output -json
+              $tfOutputs    = $tfOutputJson | ConvertFrom-Json
+
+              $missing = @()
+              foreach ($key in 'global_storage_account_name',
+                               'k8s_tls_alert_container_name',
+                               'k8s_credentials_alert_container_name') {
+                  if (-not ($tfOutputs.PSObject.Properties.Name -contains $key) -or
+                      -not $tfOutputs.$key.value) {
+                      $missing += $key
+                  }
+              }
+              if ($missing.Count -gt 0) {
+                  Write-Error "Missing required terraform outputs from global module: $($missing -join ', ')."
+                  Write-Error "Ensure terraform/global/outputs.tf defines them and that terraform apply has run on the global module."
+                  exit 1
+              }
+
+              $StorageAcct    = $tfOutputs.global_storage_account_name.value
+              $TlsContainer   = $tfOutputs.k8s_tls_alert_container_name.value
+              $CredsContainer = $tfOutputs.k8s_credentials_alert_container_name.value
+
+              Write-Host "Resolved: StorageAccount=$StorageAcct"
+              Write-Host "  TLS alert container         = $TlsContainer"
+              Write-Host "  Credentials alert container = $CredsContainer"
+
+              echo "##vso[task.setvariable variable=GlobalStorageAcct]$StorageAcct"
+              echo "##vso[task.setvariable variable=TlsAlertContainer]$TlsContainer"
+              echo "##vso[task.setvariable variable=CredAlertContainer]$CredsContainer"
+            displayName: 'Retrieve Terraform Outputs'
+
+          # ---- Step 7: TLS certificate expiry check (conditional) ----
+          # The TLS expiry threshold (30 days) is a FIXED CONSTANT inside the
+          # script. It is NOT exposed as a pipeline parameter.
+          # Storage auth is ALWAYS --auth-mode login (no key). The SP must
+          # have "Storage Blob Data Contributor" RBAC on the storage account.
+          - ${{ if eq(parameters.Run_Tls_Check, true) }}:
+            - powershell: |
+                $ErrorActionPreference = "Stop"
+                & "$(Build.SourcesDirectory)/scripts/ps/cert/Check-K8s-Tls-Cert.ps1" `
+                  -StorageAccountName "$(GlobalStorageAcct)" `
+                  -ContainerName "$(TlsAlertContainer)" `
+                  -ClusterNamePattern '${{ parameters.Cluster_Name_Pattern }}'
+              displayName: 'Run TLS Certificate Expiry Monitor'
+
+          # ---- Step 8: Credential expiry check (conditional) ----
+          # The credential warning threshold (55 days; STIG 60-day hard limit)
+          # is a FIXED CONSTANT inside the script. It is NOT exposed as a
+          # pipeline parameter.
+          # Storage auth is ALWAYS --auth-mode login (no key).
+          # KV discovery: for each cluster, the script extracts the 4-letter
+          # workspace ID from the cluster name and finds the KV whose name
+          # starts with GVJOMS{workspaceId} in the cluster's own RG.
+          - ${{ if eq(parameters.Run_Credentials_Check, true) }}:
+            - powershell: |
+                $ErrorActionPreference = "Stop"
+                & "$(Build.SourcesDirectory)/scripts/ps/credentials/Check-K8s-Credentials-Expiry.ps1" `
+                  -StorageAccountName "$(GlobalStorageAcct)" `
+                  -ContainerName "$(CredAlertContainer)" `
+                  -ClusterNamePattern '${{ parameters.Cluster_Name_Pattern }}'
+              displayName: 'Run Credential Expiry Monitor'
+
+  # 3. Post-execution node/workspace cleanup
+  - template: templates/cleanup.yml
+    parameters:
+      Depends_On_Stage: 'UnifiedK8sMonitoring'
