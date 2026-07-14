@@ -1,0 +1,342 @@
+// =============================================================================
+// Jenkins Pipeline: Unified K8s Monitoring (TLS + Credentials) — WDSF
+// =============================================================================
+//
+// Mirrors the ADO unified-k8s-monitoring.yml pipeline for the WDSF enclave.
+// Runs nightly, scans all AKS clusters matching ^AKSJOMS[A-Za-z]{4}GV01$
+// for (1) TLS certificate expiry and (2) STIG 60-day credential expiry.
+// Findings are uploaded as per-cluster JSON blobs to Azure Blob Storage.
+//
+// STRUCTURE
+//   This pipeline mirrors the existing detect-drift.jenkinsfile pattern:
+//     - Same agent label ('mvcr-windows')
+//     - Same Bitbucket checkout (REPO_URL + REPO_CREDS_ID)
+//     - Same Azure credential binding (credentials() in environment)
+//     - Same Nexus download pattern as execute-terraform.jenkinsfile
+//     - Same Login-AzCli.ps1 -POWERSHELL_LOGIN $true call (establishes
+//       BOTH az login AND Connect-AzAccount — the latter is needed by
+//       Get-AzKeyVaultSecret in the credentials script)
+//
+// STORAGE AUTH
+//   Report uploads use Save-Blob from AzStorageAccountTools.ps1 (same helper
+//   drift detection uses). Save-Blob runs `az storage blob upload --auth-mode
+//   key` without --account-key, so Azure CLI auto-discovers the storage key
+//   via the SP's listkeys permission. NO Storage Blob Data Contributor RBAC
+//   is needed — same pattern drift detection uses today.
+//
+// PREREQUISITES
+//   Jenkins credentials (already exist for the drift pipeline):
+//     - ARM_CLIENT_ID        (Secret text)
+//     - ARM_CLIENT_SECRET    (Secret text)
+//     - ARM_TENANT_ID        (Secret text)
+//     - ARM_ACCESS_KEY       (Secret text — storage account key for tfstate)
+//   Jenkins credentials for Nexus (already exist for execute-terraform):
+//     - 94a5eae4-1a19-4e4a-a7d5-590898774b7e (usernamePassword — Nexus)
+//   Jenkins credentials for Bitbucket (already exist):
+//     - 847f6785-1977-46cc-b613-0e5d9d65e5e8 (bitbucket-anr)
+//
+// =============================================================================
+
+pipeline {
+    agent {
+        node {
+            label 'mvcr-windows'
+        }
+    }
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        disableResume()
+        durabilityHint 'PERFORMANCE_OPTIMIZED'
+    }
+
+    // Nightly cron. Jenkins cron uses the Jenkins server's JVM timezone.
+    // '0 0 * * *' = midnight server-local. Adjust if UTC is required.
+    triggers { cron('0 0 * * *') }
+
+    environment {
+        ENCLAVE = "wdsf"
+        FUNC_AREA = "AFMC"
+        PROJECT = "JOMS"
+        C1_PROJECT = "${PROJECT}MVP"
+        NEXUS_REPO = "private-mvcr-asset"
+        ROOT_DOMAIN = "seicdevops.com"
+
+        BINARY_FOLDER = "IaC/software/win-amd64"
+
+        // Repository clone info (same as detect-drift.jenkinsfile)
+        REPO_URL = "https://bitbucket.seicdevops.com/scm/ni/joms-iac.git"
+        REPO_CREDS_ID = "847f6785-1977-46cc-b613-0e5d9d65e5e8"
+
+        // Azure Credentials (same as detect-drift.jenkinsfile)
+        ARM_CLIENT_ID     = credentials('ARM_CLIENT_ID')
+        ARM_CLIENT_SECRET = credentials('ARM_CLIENT_SECRET')
+        ARM_TENANT_ID     = credentials('ARM_TENANT_ID')
+        ARM_ENVIRONMENT   = 'usgovernment'
+
+        // TF State Storage Info (same as execute-terraform.jenkinsfile)
+        TFSTATE_RESOURCE_GROUP  = "RG-GovVirginia-ANR"
+        TFSTATE_STORAGE_ACCOUNT = "gvjomsmvpwil5stg"
+        TFSTATE_CONTAINER       = "terraformbackend"
+        METADATA_HOST           = "management.usgovcloudapi.net"
+
+        // Propagate build params to env vars so PowerShell blocks can read
+        // them as $env:RUN_TLS_CHECK, $env:RUN_CREDS_CHECK, etc.
+        // In Jenkins, params.X is NOT automatically available as $env:X in
+        // PowerShell — it must be explicitly mapped in this block.
+        RUN_TLS_CHECK        = "${params.Run_Tls_Check}"
+        RUN_CREDS_CHECK      = "${params.Run_Credentials_Check}"
+        CLUSTER_NAME_PATTERN = "${params.Cluster_Name_Pattern}"
+    }
+
+    parameters {
+        string(
+            name: 'REPO_BRANCH',
+            defaultValue: 'main',
+            trim: true,
+            description: 'Git branch to checkout'
+        )
+        booleanParam(
+            name: 'Run_Tls_Check',
+            defaultValue: true,
+            description: 'Run TLS certificate expiry check?'
+        )
+        booleanParam(
+            name: 'Run_Credentials_Check',
+            defaultValue: true,
+            description: 'Run credential expiry check?'
+        )
+        string(
+            name: 'Cluster_Name_Pattern',
+            defaultValue: '^AKSJOMS[A-Za-z]{4}GV01$',
+            trim: true,
+            description: 'Regex applied to AKS cluster names (only matching clusters are scanned)'
+        )
+        booleanParam(
+            name: 'CLEAN_WS',
+            defaultValue: false,
+            description: 'Clean Jenkins Workspace before checkout'
+        )
+    }
+
+    stages {
+
+        stage('Init Workspace') {
+            steps {
+                script {
+                    if (params.CLEAN_WS) {
+                        cleanWs()
+                    }
+                }
+
+                checkout changelog: false, poll: false,
+                    scm: [
+                        $class: 'GitSCM',
+                        branches: [[name: "${params.REPO_BRANCH}"]],
+                        userRemoteConfigs: [[
+                            credentialsId: "${env.REPO_CREDS_ID}",
+                            url: "${env.REPO_URL}"
+                        ]]
+                    ]
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Log into Azure — establishes BOTH az login AND Connect-AzAccount.
+        // The credentials script needs Connect-AzAccount for Get-AzKeyVaultSecret.
+        // -------------------------------------------------------------------------
+        stage('Log into Azure') {
+            steps {
+                powershell '''
+                scripts/ps/functions/Login-AzCli.ps1 `
+                    -ARM_CLIENT_ID $env:ARM_CLIENT_ID `
+                    -ARM_CLIENT_SECRET $env:ARM_CLIENT_SECRET `
+                    -ARM_TENANT_ID $env:ARM_TENANT_ID `
+                    -POWERSHELL_LOGIN $true
+                '''
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Download tooling from Nexus (kubectl, kubelogin, terraform).
+        // Mirrors execute-terraform.jenkinsfile's Download Dependencies stage.
+        // -------------------------------------------------------------------------
+        stage('Download Dependencies') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: '94a5eae4-1a19-4e4a-a7d5-590898774b7e',
+                                                  usernameVariable: 'NEXUS_USERNAME',
+                                                  passwordVariable: 'NEXUS_PASSWORD')]) {
+                    powershell '''
+                    scripts/ps/functions/Export-Versions.ps1
+                    if(-Not (Test-Path "$env:WORKSPACE\\kubectl.exe")) {
+                        scripts/ps/functions/Download-Nexus.ps1 `
+                            -ArtifactSource "$env:BINARY_FOLDER/kubectl-$env:KUBECTL_VERSION.exe" `
+                            -ArtifactDestination "$env:WORKSPACE\\kubectl.exe" `
+                            -NexusRepo "$env:NEXUS_REPO" `
+                            -NexusUsername $env:NEXUS_USERNAME `
+                            -NexusPassword $env:NEXUS_PASSWORD
+                    }
+                    if(-Not (Test-Path "$env:WORKSPACE\\kubelogin.exe")) {
+                        scripts/ps/functions/Download-Nexus.ps1 `
+                            -ArtifactSource "$env:BINARY_FOLDER/kubelogin-$env:KUBELOGIN_VERSION.exe" `
+                            -ArtifactDestination "$env:WORKSPACE\\kubelogin.exe" `
+                            -NexusRepo "$env:NEXUS_REPO" `
+                            -NexusUsername $env:NEXUS_USERNAME `
+                            -NexusPassword $env:NEXUS_PASSWORD
+                    }
+                    if(-Not (Test-Path "$env:WORKSPACE\\terraform-bundle.zip")) {
+                        scripts/ps/functions/Download-Nexus.ps1 `
+                            -ArtifactSource "$env:BINARY_FOLDER/terraform-bundle-$env:TERRAFORM_VERSION.zip" `
+                            -ArtifactDestination "$env:WORKSPACE\\terraform-bundle.zip" `
+                            -NexusRepo "$env:NEXUS_REPO" `
+                            -NexusUsername $env:NEXUS_USERNAME `
+                            -NexusPassword $env:NEXUS_PASSWORD
+                        scripts/ps/functions/Extract-Archive.ps1 `
+                            -Archive "$env:WORKSPACE\\terraform-bundle.zip" `
+                            -Destination $env:WORKSPACE `
+                            -VerifyFile "terraform.exe"
+                    }
+                    '''
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Initialize Terraform on the global module only.
+        // -------------------------------------------------------------------------
+        stage('Initialize Terraform') {
+            steps {
+                withCredentials([string(credentialsId: 'ARM_ACCESS_KEY',
+                                        variable: 'ARM_ACCESS_KEY')]) {
+                    powershell '''
+                    scripts/ps/terraform/Init-Terraform.ps1 `
+                        -TfModule 'global' `
+                        -TfWorkspace 'Global' `
+                        -BinDir $env:WORKSPACE `
+                        -TfStateResourceGroup $env:TFSTATE_RESOURCE_GROUP `
+                        -TfStateStorageAccount $env:TFSTATE_STORAGE_ACCOUNT `
+                        -TfStateContainer $env:TFSTATE_CONTAINER `
+                        -ArmAccessKey $env:ARM_ACCESS_KEY `
+                        -MetadataHost $env:METADATA_HOST
+                    '''
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Run Unified K8s Monitoring (TLS + Credentials).
+        //
+        // Single PowerShell block because Jenkins env vars set via ##vso or
+        // $env: don't persist across `powershell` steps. We capture TF outputs
+        // and invoke both scripts in the same shell.
+        //
+        // Both scripts use Save-Blob (from AzStorageAccountTools.ps1) for blob
+        // uploads — same helper drift detection uses. Key auto-discovery via
+        // the SP's listkeys permission. NO Storage Blob Data Contributor RBAC.
+        // -------------------------------------------------------------------------
+        stage('Run Unified K8s Monitoring') {
+            steps {
+                // Re-login to refresh the az token (may have expired since
+                // the 'Log into Azure' stage). Idempotent. No script{} wrapper
+                // needed — powershell is a valid Declarative Pipeline step.
+                powershell '''
+                scripts/ps/functions/Login-AzCli.ps1 `
+                    -ARM_CLIENT_ID $env:ARM_CLIENT_ID `
+                    -ARM_CLIENT_SECRET $env:ARM_CLIENT_SECRET `
+                    -ARM_TENANT_ID $env:ARM_TENANT_ID `
+                    -POWERSHELL_LOGIN $true
+                '''
+
+                powershell '''
+                $ErrorActionPreference = "Stop"
+                . "$env:WORKSPACE/scripts/ps/functions/CommonUtilities.ps1"
+
+                # --- Retrieve Terraform outputs from the global module ---
+                Set-Location "$env:WORKSPACE/terraform/global"
+                $tfOutputJson = Exec terraform output -json
+                $tfOutputs    = $tfOutputJson | ConvertFrom-Json
+
+                $missing = @()
+                foreach ($key in 'global_storage_account_name',
+                                 'k8s_tls_alert_container_name',
+                                 'k8s_credentials_alert_container_name') {
+                    if (-not ($tfOutputs.PSObject.Properties.Name -contains $key) -or
+                        -not $tfOutputs.$key.value) {
+                        $missing += $key
+                    }
+                }
+                if ($missing.Count -gt 0) {
+                    Write-Error "Missing required terraform outputs from global module: $($missing -join ', ')."
+                    Write-Error "Ensure terraform/global/outputs.tf defines them and that terraform apply has run on the global module."
+                    exit 1
+                }
+
+                $StorageAcct    = $tfOutputs.global_storage_account_name.value
+                $TlsContainer   = $tfOutputs.k8s_tls_alert_container_name.value
+                $CredsContainer = $tfOutputs.k8s_credentials_alert_container_name.value
+
+                Write-Host "Resolved: StorageAccount=$StorageAcct"
+                Write-Host "  TLS alert container         = $TlsContainer"
+                Write-Host "  Credentials alert container = $CredsContainer"
+
+                Set-Location "$env:WORKSPACE"
+
+                # --- Phase 1: TLS Certificate Expiry Monitor ---
+                # Threshold (30 days) is a FIXED CONSTANT inside the script.
+                # Storage auth: Save-Blob --auth-mode key (key auto-discovery).
+                if ($env:RUN_TLS_CHECK -eq 'True') {
+                    Write-Host ""
+                    Write-Host "=========================================="
+                    Write-Host "Phase 1: TLS Certificate Expiry Monitor"
+                    Write-Host "=========================================="
+                    & "$env:WORKSPACE/scripts/ps/cert/Check-K8s-Tls-Cert.ps1" `
+                        -StorageAccountName $StorageAcct `
+                        -ContainerName $TlsContainer `
+                        -ClusterNamePattern $env:CLUSTER_NAME_PATTERN
+                } else {
+                    Write-Host "Skipping TLS check (Run_Tls_Check=false)"
+                }
+
+                # --- Phase 2: Credential Expiry Monitor ---
+                # Threshold (55 days warn / 60 days STIG hard limit) is a
+                # FIXED CONSTANT inside the script.
+                # KV access: Get-AzKeyVaultSecret (Connect-AzAccount session
+                # established in 'Log into Azure' stage).
+                # Storage auth: Save-Blob --auth-mode key (key auto-discovery).
+                if ($env:RUN_CREDS_CHECK -eq 'True') {
+                    Write-Host ""
+                    Write-Host "=========================================="
+                    Write-Host "Phase 2: Credential Expiry Monitor"
+                    Write-Host "=========================================="
+                    & "$env:WORKSPACE/scripts/ps/credentials/Check-K8s-Credentials-Expiry.ps1" `
+                        -StorageAccountName $StorageAcct `
+                        -ContainerName $CredsContainer `
+                        -ClusterNamePattern $env:CLUSTER_NAME_PATTERN
+                } else {
+                    Write-Host "Skipping Credentials check (Run_Credentials_Check=false)"
+                }
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            powershell '''
+            # Remove kubeconfig so subsequent builds start fresh.
+            $kubeConfig = "$env:USERPROFILE/.kube/config"
+            if (Test-Path $kubeConfig) {
+                Remove-Item $kubeConfig -Force -ErrorAction SilentlyContinue
+                Write-Host "Cleaned up kubeconfig."
+            }
+            '''
+        }
+        failure {
+            echo "Pipeline FAILED. Check the logs above for per-cluster errors."
+        }
+        success {
+            echo "Pipeline completed successfully."
+        }
+    }
+}
