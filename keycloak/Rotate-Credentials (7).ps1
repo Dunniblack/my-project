@@ -153,20 +153,25 @@ After seeding, re-run this pipeline. Subsequent rotations are fully automated.
 
         Write-Host "Authenticating to Prisma Cloud API..."
         $authPayload = @{ username = "admin"; password = $currentPassword } | ConvertTo-Json -Compress
-        $authPayloadEscaped = $authPayload -replace "'", "'\''"
-        $authCmd = "curl -sk -X POST '$consoleApi/authenticate' -H 'Content-Type: application/json' -d '$authPayloadEscaped'"
-        $authResult = Exec kubectl -n $namespace exec $podName -- sh -c $authCmd
+        $authPayloadB64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($authPayload))
+        $authCmd = "echo '$authPayloadB64' | base64 -d | curl -sk -X POST '$consoleApi/authenticate' -H 'Content-Type: application/json' -d @-"
+        $authResult = (Exec kubectl -n $namespace exec $podName -- sh -c $authCmd) -join ''
 
-        $authObj = $authResult | ConvertFrom-Json
+        Write-Host "  Raw API response length: $($authResult.Length)"
+        if (-not $authResult.Trim()) { throw "Empty response from Prisma Cloud API." }
+
+        $authObj = $null
+        try { $authObj = $authResult | ConvertFrom-Json } catch { throw "Failed to parse auth response as JSON. Raw: $authResult" }
         if (-not $authObj.token) { throw "Failed to obtain JWT from Prisma Cloud API. Response: $authResult" }
         $jwt = $authObj.token
         Write-Host "  JWT obtained successfully."
 
         Write-Host "Retrieving admin user ID..."
         $usersCmd = "curl -sk '$consoleApi/users' -H 'Authorization: Bearer $jwt'"
-        $usersResult = Exec kubectl -n $namespace exec $podName -- sh -c $usersCmd
+        $usersResult = (Exec kubectl -n $namespace exec $podName -- sh -c $usersCmd) -join ''
 
-        $users = $usersResult | ConvertFrom-Json
+        $users = $null
+        try { $users = $usersResult | ConvertFrom-Json } catch { throw "Failed to parse users response as JSON. Raw: $usersResult" }
         $adminUser = $users | Where-Object { $_.username -eq "admin" } | Select-Object -First 1
         if (-not $adminUser) { throw "Admin user not found in Prisma Cloud user list. Response: $usersResult" }
         $adminId = $adminUser.id
@@ -185,9 +190,9 @@ After seeding, re-run this pipeline. Subsequent rotations are fully automated.
             password = $newPassword
             role     = $adminRole
         } | ConvertTo-Json -Compress
-        $updatePayloadEscaped = $updatePayload -replace "'", "'\''"
-        $updateCmd = "curl -sk -X PUT '$consoleApi/users/$adminId' -H 'Content-Type: application/json' -H 'Authorization: Bearer $jwt' -d '$updatePayloadEscaped'"
-        $updateResult = Exec kubectl -n $namespace exec $podName -- sh -c $updateCmd
+        $updatePayloadB64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($updatePayload))
+        $updateCmd = "echo '$updatePayloadB64' | base64 -d | curl -sk -X PUT '$consoleApi/users/$adminId' -H 'Content-Type: application/json' -H 'Authorization: Bearer $jwt' -d @-"
+        $updateResult = (Exec kubectl -n $namespace exec $podName -- sh -c $updateCmd) -join ''
 
         Write-Host "  API response: $updateResult"
         Write-Host "Prisma Cloud admin password rotated successfully."
