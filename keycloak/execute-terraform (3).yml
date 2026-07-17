@@ -1,0 +1,161 @@
+appendCommitMessageToRunName: false
+
+trigger: none
+
+pool:
+  name: AFMC-JOMSMVP
+
+parameters:
+- name: TF_Module
+  displayName: The Terraform Module to Execute
+  type: string
+  default: global
+  values:
+  - global
+  - infrastructure
+  - software
+- name: TF_Action
+  displayName: The Terraform Action to Execute
+  type: string
+  default: plan
+  values:
+  - plan
+  - apply
+  - show
+  - destroy
+  - detect-drift
+- name: TF_Workspace
+  displayName: The Terraform Workspace (Resolves to 'Global' if using the Global TF Module.)
+  type: string
+  default: MVP
+- name: Generate_Certs
+  displayName: Generate TLS Certificates (Only applies when running TF Apply on Infrastructure.)
+  type: boolean
+  default: false
+- name: TARGET_TOOL
+  displayName: Management tool to rotate post-apply (none = skip rotation)
+  type: string
+  default: none
+  values:
+  - none
+  - rancher
+  - argocd
+  - keycloak
+  - prisma
+- name: TF_Vars
+  displayName: (Optional) Additional Terraform Variables
+  type: string
+  default: ' '
+- name: Post_PS_Scripts
+  displayName: (Optional) CSV list of Post PowerShell Scripts to execute
+  type: string
+  default: ' '
+
+variables:
+- group: AFMC-JOMSMVP-KVT
+- name: ARM_CLIENT_ID
+  value: $(spAppId)
+- name: ARM_CLIENT_SECRET
+  value: $(spAppKey)
+- name: ARM_ACCESS_KEY
+  value: $(container-access-key-1)
+- name: ARM_TENANT_ID
+  value: $(tenant-id)
+- name: ARM_ENVIRONMENT
+  value: 'usgovernment'
+- name: TFSTATE_CONTAINER
+  value: $(tfstate-container)
+- name: TFSTATE_STORAGE_ACCOUNT
+  value: $(tfstate-storage-account)
+- name: TFSTATE_RESOURCE_GROUP
+  value: $(tfstate-resource-group)
+- name: FUNC_AREA
+  value: 'AFMC'
+- name: PROJECT
+  value: 'JOMS'
+- name: C1_PROJECT
+  value: '$(PROJECT)MVP'
+- name: METADATA_HOST
+  value: 'management.usgovcloudapi.net'
+- name: NEXUS_REPO
+  value: 'private-mvcr-asset'
+
+stages:
+  - template: templates/gather-dynamic-vars.yml
+    parameters:
+      BuildName: 'Execute Terraform Module ${{ parameters.TF_Module }} Action ${{ parameters.TF_Action }} Workspace ${{ parameters.TF_Workspace }}'
+
+  - template: templates/execute-terraform.yml
+    parameters:
+      Stage_Title: '${{ parameters.TF_Module }}'
+      TF_Module: ${{ parameters.TF_Module }}
+      TF_Action: ${{ parameters.TF_Action }}
+      ${{ if eq(parameters.TF_Module,'global') }}:
+        TF_Workspace: Global
+      ${{ else }}:
+        TF_Workspace: ${{ parameters.TF_Workspace }}
+      TF_Vars: ${{ parameters.TF_Vars }}
+      Generate_Certs: ${{ parameters.Generate_Certs }}
+      Post_PS_Scripts: ${{ parameters.Post_PS_Scripts }}
+
+  - ${{ if and(ne(parameters.TARGET_TOOL, 'none'), eq(parameters.TF_Action, 'apply')) }}:
+    - stage: K8sCredentialRotation
+      displayName: 'Core Tooling Credential Rotation'
+      dependsOn:
+        - 'variables'
+        - 'Execute_TF_${{ parameters.TF_Module }}'
+      variables:
+        stage: $[ stageDependencies.variables.get.outputs['c1.stage'] ]
+        ado_agent_name: $[ stageDependencies.variables.get.outputs['ado.AgentName'] ]
+        tf_aks_cluster_name:        $[ stageDependencies.Execute_TF_${{ parameters.TF_Module }}.Terraform_Execute_Job.outputs['capture_outputs.tf_aks_cluster_name'] ]
+        tf_aks_key_vault_name:      $[ stageDependencies.Execute_TF_${{ parameters.TF_Module }}.Terraform_Execute_Job.outputs['capture_outputs.tf_aks_key_vault_name'] ]
+        tf_aks_resource_group_name: $[ stageDependencies.Execute_TF_${{ parameters.TF_Module }}.Terraform_Execute_Job.outputs['capture_outputs.tf_aks_resource_group_name'] ]
+      pool:
+        demands:
+          - Agent.Name -equals $(ado_agent_name)
+      jobs:
+        - job: RunRotation
+          displayName: 'Execute Post-Apply Credentials Rotation Sequence'
+          steps:
+            - powershell: |
+                $ErrorActionPreference = "Stop"
+
+                $tfModule = "${{ parameters.TF_Module }}".Trim()
+                $tfWorkspace = "${{ parameters.TF_Workspace }}".Trim()
+                if ($tfModule -eq "global") { $tfWorkspace = "Global" }
+
+                $ClusterName = "$(tf_aks_cluster_name)".Trim()
+                if (-not $ClusterName) {
+                    Write-Error "Could not resolve active cluster name from Terraform outputs."
+                    exit 1
+                }
+
+                $rgName = "$(tf_aks_resource_group_name)".Trim()
+                if (-not $rgName) {
+                    Write-Error "Could not resolve resource group from Terraform outputs."
+                    exit 1
+                }
+
+                $kvName = "$(tf_aks_key_vault_name)".Trim()
+                if (-not $kvName) {
+                    Write-Error "Could not resolve key vault name from Terraform outputs."
+                    exit 1
+                }
+
+                Write-Host "Resolved Execution Context: Enclave=$(stage), Workspace=$tfWorkspace, Cluster=$ClusterName, RG=$rgName, KeyVault=$kvName"
+                Write-Host "Executing on-demand rotation for ${{ parameters.TARGET_TOOL }}..."
+
+                & "$(Build.SourcesDirectory)/scripts/ps/credentials/Rotate-Credentials.ps1" `
+                    -KeyVaultName "$kvName" `
+                    -ClusterName "$ClusterName" `
+                    -ResourceGroupName "$rgName" `
+                    -TargetTool "${{ parameters.TARGET_TOOL }}" `
+                    -BinDir "$(Pipeline.Workspace)"
+              displayName: 'Run Rotate-Credentials Script'
+
+  - template: templates/cleanup.yml
+    parameters:
+      ${{ if and(ne(parameters.TARGET_TOOL, 'none'), eq(parameters.TF_Action, 'apply')) }}:
+        Depends_On_Stage: 'K8sCredentialRotation'
+      ${{ else }}:
+        Depends_On_Stage: 'Execute_TF_${{ parameters.TF_Module }}'
